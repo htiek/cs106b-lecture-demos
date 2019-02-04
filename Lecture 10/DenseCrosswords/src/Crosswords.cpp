@@ -57,6 +57,16 @@ void printCrossword(const Grid<char>& crossword) {
     }
 }
 
+/**
+ * Returns whether it's possible to extend a partial crossword into a full one.
+ * If so, the crossword is updated to contain the solution.
+ *
+ * @param crossword The partial crossword.
+ * @param nextRow The next row that needs to be filled in.
+ * @param rowWords All words that can fit in the rows.
+ * @param colWords All words that can fit in the columns.
+ * @return Whether the crossword can be extended.
+ */
 bool recCanMakeCrossword(Grid<char>& crossword,
                          int nextRow,
                          const Lexicon& rowWords,
@@ -81,22 +91,26 @@ bool recCanMakeCrossword(Grid<char>& crossword,
     return false;
 }
 
+/**
+ * Returns whether the crossword grid can be filled in so that each row and
+ * column are words.
+ *
+ * @param crossword The partial crossword.
+ * @param english All English words.
+ */
 bool canMakeCrossword(Grid<char>& crossword, const Lexicon& english) {
     /* Split the Lexicon into two smaller lexicons, one for words that can appear
      * in rows, and one for words that can appear in columns.
      */
     Lexicon rowWords, colWords;
     for (string word: english) {
-        if (word.length() == crossword.numCols()) {
-            rowWords += word;
-        }
+        if (word.length() == crossword.numCols()) rowWords += word;
+
         /* No else here - the grid could be a square! */
-        if (word.length() == crossword.numRows()) {
-            colWords += word;
-        }
+        if (word.length() == crossword.numRows()) colWords += word;
     }
 
-    return recCanMakeCrossword(crossword, baseRow, rowWords, colWords);
+    return recCanMakeCrossword(crossword, 0, rowWords, colWords);
 }
 
 int main() {
