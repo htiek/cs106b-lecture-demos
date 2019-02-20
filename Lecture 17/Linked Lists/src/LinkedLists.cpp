@@ -72,7 +72,7 @@ void freeList(Cell* list) {
 }
 
 /* Prepends a new cell onto the front of a linked list. */
-void listInsert(Cell* list, const string& value) {
+void listInsert(Cell*& list, const string& value) {
     Cell* newCell = new Cell;
     newCell->value = value;
     newCell->next = list;
