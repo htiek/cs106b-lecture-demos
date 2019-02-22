@@ -18,34 +18,34 @@ struct Node {
 	Node* right;
 };
 
-/* Returns a BST containing a bunch of Marlon Brando movies. Normally, you wouldn't construct
+/* Returns a BST containing a bunch of California trees. Normally, you wouldn't construct
  * a BST this way; this is just here for the lecture demo.
  */
-Node* makeBrandoTree() {
+Node* makeTreeTree() {
     return new Node {
-        "On the Waterfront",
+        "Douglas Fir",
         new Node {
-            "Apocalypse Now",
+            "Bristlecone Pine",
             new Node {
-                "A Streetcar Named Desire",
+                "Bay Laurel",
                 nullptr,
                 nullptr
             },
             new Node {
-                "Julius Caesar",
+                "Coast Redwood",
                 nullptr,
                 nullptr
             }
         },
         new Node {
-            "The Godfather",
+            "Jeffrey Pine",
             new Node {
-                "Superman",
+                "Giant Sequoia",
                 nullptr,
                 nullptr
             },
             new Node {
-                "Viva Zapata!",
+                "Manzanita",
                 nullptr,
                 nullptr
             }
@@ -92,16 +92,16 @@ void insertInto(Node*& root, const string& key) {
 }
 
 int main() {
-    Node* root = makeBrandoTree();
+    Node* root = makeTreeTree();
     printTree(root);
 
     while (true) {
-        string movie = getLine("Enter movie title: ");
-        if (contains(root, movie)) {
-            cout << "Stellaaaaaaa(r!)" << endl;
+        string name = getLine("Enter tree: ");
+        if (contains(root, name)) {
+            cout << "Tree-mendous!" << endl;
         } else {
-            cout << "You don't understand! I could've been a contender! I could've had class!" << endl;
-            insertInto(root, movie);
+            cout << "If at first you don't succeed, tree, tree again!" << endl;
+            insertInto(root, name);
         }
     }
 
