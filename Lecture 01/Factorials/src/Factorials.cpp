@@ -8,7 +8,10 @@
 #include "console.h"
 using namespace std;
 
-int main() {
+int factorial(int n);
 
+int main() {
+    int n = getInteger("Enter an integer: ");
+    cout << n << "! = " << factorial(n) << endl;
     return 0;
 }

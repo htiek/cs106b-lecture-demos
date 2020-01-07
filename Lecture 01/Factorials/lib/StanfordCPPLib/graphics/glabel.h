@@ -3,6 +3,10 @@
  * --------------
  *
  * @author Marty Stepp
+ * @version 2019/04/23
+ * - moved some event-handling code to GInteractor superclass
+ * @version 2019/04/22
+ * - added setIcon with QIcon and QPixmap
  * @version 2018/10/04
  * - added get/setWordWrap
  * @version 2018/09/07
@@ -50,9 +54,9 @@ class GWindow;
  * A GLabel represents a text string.
  * A label can contain text and/or an image icon.
  *
- * GLabels can be made clickable with the setActionListener and
- * setDoubleClickListener methods, but generally if you want a clickable
- * interactor with text on it, you may prefer a GButton.
+ * GLabels can be made clickable by setting an action, click, or double-click
+ * listener, but generally if you want a clickable interactor with text on it,
+ * you may prefer a GButton.
  */
 class GLabel : public GInteractor {
 public:
@@ -60,6 +64,16 @@ public:
      * Creates a label with the specified text label and optional icon.
      */
     GLabel(const std::string& text = "", const std::string& iconFileName = "", QWidget* parent = nullptr);
+
+    /**
+     * Creates a label with the specified text label and icon.
+     */
+    GLabel(const std::string& text, const QIcon& icon, QWidget* parent = nullptr);
+
+    /**
+     * Creates a label with the specified text label and icon.
+     */
+    GLabel(const std::string& text, const QPixmap& icon, QWidget* parent = nullptr);
 
     /**
      * Frees memory allocated internally by the label.
@@ -100,32 +114,6 @@ public:
      */
     virtual bool isWordWrap() const;
 
-    /**
-     * Removes the action listener from this button so that it will no longer
-     * call it when events occur.
-     */
-    virtual void removeActionListener();
-
-    /**
-     * Removes the double-click listener from this button so that it will no longer
-     * call it when events occur.
-     */
-    virtual void removeDoubleClickListener();
-
-    /**
-     * Sets an action listener on this button so that it will be called
-     * when the button is clicked.
-     * Any existing action listener will be replaced.
-     */
-    virtual void setActionListener(GEventListener func);
-
-    /**
-     * Sets an action listener on this button so that it will be called
-     * when the button is clicked.
-     * Any existing action listener will be replaced.
-     */
-    virtual void setActionListener(GEventListenerVoid func);
-
     /* @inherit */
     virtual void setBounds(double x, double y, double width, double height) Q_DECL_OVERRIDE;
 
@@ -137,20 +125,6 @@ public:
 
     /* @inherit */
     virtual void setColor(const std::string& color) Q_DECL_OVERRIDE;
-
-    /**
-     * Sets a listener on this button so that it will be called
-     * when the button is double-clicked.
-     * Any existing double-click listener will be replaced.
-     */
-    virtual void setDoubleClickListener(GEventListener func);
-
-    /**
-     * Sets a listener on this button so that it will be called
-     * when the button is double-clicked.
-     * Any existing double-click listener will be replaced.
-     */
-    virtual void setDoubleClickListener(GEventListenerVoid func);
 
     /* @inherit */
     virtual void setFont(const QFont& font) Q_DECL_OVERRIDE;
@@ -166,6 +140,12 @@ public:
 
     /* @inherit */
     virtual void setHeight(double height) Q_DECL_OVERRIDE;
+
+    /* @inherit */
+    virtual void setIcon(const QIcon& icon) Q_DECL_OVERRIDE;
+
+    /* @inherit */
+    virtual void setIcon(const QPixmap& icon) Q_DECL_OVERRIDE;
 
     /* @inherit */
     virtual void setIcon(const std::string& filename, bool retainIconSize = true) Q_DECL_OVERRIDE;
@@ -241,6 +221,7 @@ class _Internal_QLabel : public QLabel, public _Internal_QWidget {
 
 public:
     _Internal_QLabel(GLabel* glabel, QWidget* parent = nullptr);
+    virtual void detach() Q_DECL_OVERRIDE;
     virtual QSize sizeHint() const Q_DECL_OVERRIDE;
 
 signals:
@@ -253,6 +234,8 @@ protected:
 
 private:
     GLabel* _glabel;
+
+    friend class GLabel;
 };
 
 #endif // _glabel_h
