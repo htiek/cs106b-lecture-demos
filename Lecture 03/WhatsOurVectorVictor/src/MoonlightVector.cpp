@@ -8,8 +8,21 @@
 #include "console.h"
 using namespace std;
 
-int main() {
-    return 0;
+
+void growUp(Vector<string> cast) {
+    cast += "Paula";
+    cast[0] = "Chiron";
 }
 
+int main() {
+    Vector<string> moonlight = { "Little", "Teresa", "Kevin" };
+    
+    growUp(moonlight);
+   
+    for (string person: moonlight) {
+        cout << person << endl;
+    }
+   
+    return 0;
+}
 
