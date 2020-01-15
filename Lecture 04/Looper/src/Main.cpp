@@ -9,23 +9,39 @@
 #include <string>
 using namespace std;
 
+/* Type representing a sound clip. */
 struct SoundClip {
-    string filename;
-    double length;
+    string filename; // Name of the file
+    double length;   // How long to play it for
 };
 
-Queue<SoundClip> loadLoop() {
-    string filename = promptUserForFile("Enter loop file: ");
+/* Given the name of a loop file, loads the clips from
+ * that file into a Queue.
+ */
+Queue<SoundClip> loadLoop(const string& filename) {
+    /* See Chapter 3 of the textbook for details. */
+    ifstream input(filename);
 
     Queue<SoundClip> result;
 
-    ifstream input(filename);
+    /* The idiomatic "read all the lines of this file"
+     * loop in C++.
+     */
     for (string line; getline(input, line); ) {
-        Vector<string> parts = stringSplit(line, " ");
+        /* Each line has the form
+         *
+         * Filename Duration
+         *
+         * We'll split on a space, taking the first item
+         * as the name of the file and the second as the
+         * duration.
+         */
+        Vector<string> pieces = stringSplit(line, " ");
 
+        /* Parse things into a SoundClip. */
         SoundClip clip;
-        clip.filename = parts[0];
-        clip.length   = stringToReal(parts[1]);
+        clip.filename = pieces[0];
+        clip.length   = stringToReal(pieces[1]);
 
         result.enqueue(clip);
     }
@@ -34,11 +50,28 @@ Queue<SoundClip> loadLoop() {
 }
 
 int main() {
-    Queue<SoundClip> loop = loadLoop();
+    /* We've bundled the following sample clips:
+     *
+     * RowYourBoat.loop: The children's song "Row Your Boat"
+     * FirstCircle.loop: The intro to "The First Circle" by Pat Metheny Group
+     * Solfegietto.loop: The first bars of "Solfegietto in C Minor" by C.P.E. Bach
+     * Money.loop:       The bass line from "Money" by Pink Floyd
+     * Pentatonic.loop:  A rising and falling pentatonic scale
+     * Gnossienne4.loop: A section of "Gnossienne 4" by Erik Satie
+     */
+    Queue<SoundClip> loop = loadLoop("FirstCircle.loop");
+
     while (true) {
+        /* Play the clip that's been waiting the longest. */
         SoundClip toPlay = loop.dequeue();
         playSound(toPlay.filename, toPlay.length);
+
+        /* Put it at the back of the line. */
         loop.enqueue(toPlay);
     }
-    return 0;
+
+    /* No return statement needed; the above loop is
+     * infinite and we can never get here.
+     */
 }
+

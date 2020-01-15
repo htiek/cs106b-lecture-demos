@@ -289,7 +289,7 @@ DEFINES += SPL_CONSOLE_WIDTH=900
 DEFINES += SPL_CONSOLE_HEIGHT=550
 
 # font size of the font in the graphical console window; can also be set via window menu
-#DEFINES += SPL_CONSOLE_FONTSIZE=18
+DEFINES += SPL_CONSOLE_FONTSIZE=36
 
 # echo graphical console onto the plain text console as well?
 DEFINES += SPL_CONSOLE_ECHO
