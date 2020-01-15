@@ -59,7 +59,7 @@ int main() {
      * Pentatonic.loop:  A rising and falling pentatonic scale
      * Gnossienne4.loop: A section of "Gnossienne 4" by Erik Satie
      */
-    Queue<SoundClip> loop = loadLoop("FirstCircle.loop");
+    Queue<SoundClip> loop = loadLoop("RowYourBoat.loop");
 
     while (true) {
         /* Play the clip that's been waiting the longest. */
