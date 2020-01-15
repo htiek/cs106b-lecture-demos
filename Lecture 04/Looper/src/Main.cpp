@@ -14,9 +14,7 @@ struct SoundClip {
     double length;
 };
 
-Queue<SoundClip> loadLoop() {
-    string filename = promptUserForFile("Enter loop file: ");
-
+Queue<SoundClip> loadLoop(const string& filename) {
     Queue<SoundClip> result;
 
     ifstream input(filename);
@@ -34,7 +32,7 @@ Queue<SoundClip> loadLoop() {
 }
 
 int main() {
-    Queue<SoundClip> loop = loadLoop();
+    Queue<SoundClip> loop = loadLoop("Money.loop");
     while (true) {
         SoundClip toPlay = loop.dequeue();
         playSound(toPlay.filename, toPlay.length);
