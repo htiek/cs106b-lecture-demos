@@ -36,9 +36,9 @@ Queue<SoundClip> loadLoop() {
 int main() {
     Queue<SoundClip> loop = loadLoop();
     while (true) {
-        SoundClip current = loop.dequeue();
-        playSound(current.filename, current.length);
-        loop.enqueue(current);
+        SoundClip toPlay = loop.dequeue();
+        playSound(toPlay.filename, toPlay.length);
+        loop.enqueue(toPlay);
     }
     return 0;
 }
