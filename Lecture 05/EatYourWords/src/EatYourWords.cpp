@@ -6,11 +6,13 @@
  */
 #include <iostream>
 #include <string>
+#include <cctype>
 #include "console.h"
 #include "lexicon.h"
 #include "simpio.h"
 #include "strlib.h"
-#include "map.h"
+#include "hashmap.h"
+#include "hashset.h"
 using namespace std;
 
 /**
@@ -27,22 +29,22 @@ string sortedVersionOf(const string& input) {
      */
 
     /* Build a frequency table of the letters in the word. */
-    Map<char, int> letterFreq;
+    HashMap<char, int> letterFreq;
     for (char ch: input) {
         letterFreq[ch]++;
-	}
-	
+    }
+
     /* Iterate over the frequency table and build the result
      * string from the information it contains.
      */
-	string result;
-    for (char ch: letterFreq) {
+    string result;
+    for (char ch = 'a'; ch <= 'z'; ch++) {
         for (int i = 0; i < letterFreq[ch]; i++) {
-			result += ch;
-		}
-	}
-	
-	return result;
+            result += ch;
+        }
+    }
+
+    return result;
 }
 
 /**
@@ -59,36 +61,14 @@ bool isTautonym(const string& word) {
     }
 
     /* Check if the first and second halves of the word are equal. */
-    return word.substr(0, word.length() / 2) ==
-           word.substr(word.length() / 2);
+    int half = word.length() / 2;
+    return word.substr(0, half) == word.substr(half);
 }
 
 int main() {
-    Lexicon english("EnglishWords.dat");
+    Lexicon english("EnglishWords.txt");
 
-    /* Distribute words into their anagram clusters. This uses
-     * the handy map autoinsertion feature.
-     */
-    Map<string, Lexicon> anagramClusters;
-    for(string word: english) {
-        anagramClusters[sortedVersionOf(word)].add(word);
-	}
-	
-	while (true) {
-		string word = getLine("Enter a word: ");
 
-        /* The key we'll use will be the sorted version of the word.
-         * Question to ponder: why convert to lower case, then
-         * sort, rather than the other way around?
-         */
-        string key = sortedVersionOf(toLowerCase(word));
-		
-        if (anagramClusters.containsKey(key)) {
-            cout << anagramClusters[key] << endl;
-		} else {
-            cout << "Alas, such words are not to be found here." << endl;
-		}
-	}
     return 0;
 }
 
@@ -98,5 +78,5 @@ int main() {
 
 
 
-		
-	
+
+
