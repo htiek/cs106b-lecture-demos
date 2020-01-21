@@ -4,6 +4,10 @@
  * This file exports the <code>HashMap</code> class, which stores
  * a set of <i>key</i>-<i>value</i> pairs.
  * 
+ * @version 2019/04/09
+ * - renamed private members with underscore naming scheme for consistency
+ * @version 2019/02/04
+ * - changed internal implementation to wrap std collections
  * @version 2018/03/10
  * - added methods front, back
  * @version 2017/11/30
@@ -404,14 +408,69 @@ public:
     /**********************************************************************/
 
 private:
+    static_assert(stanfordcpplib::collections::IsHashable<KeyType>::value,
+                  "Oops! You tried using a type as a key in our HashMap without making it hashable. Click this error for more details.");
+    /*
+     * Hello CS106 students! If you got directed to this line of code in a compiler error,
+     * it probably means that you tried making a HashMap with a custom struct or class type
+     * as the key type or a HashSet with a custom struct as a value type. (The same also
+     * applies for LinkedHashMap and LinkedHashSet.)
+     *
+     * In order to have a type be a key type in a HashMap - or to have a type be a value type
+     * in a HashSet - it needs to have a hashCode function defined and be capable of being
+     * compared using the == operator. If you were directed here, one of those two conditions
+     * wasn't met.
+     *
+     * There are two ways to fix this. The first option would simply be to not use your custom
+     * type as a key in the HashMap or value in a HashSet. This is probably the easiest option.
+     *
+     * The second way to fix this is to explicitly define a hashCode() and operator== function
+     * for your type. To do so, first define hashCode as follows:
+     *
+     *     int hashCode(const YourCustomType& obj) {
+     *         return hashCode(obj.data1, obj.data2, ..., obj.dataN);
+     *     }
+     *
+     * where data1, data2, ... dataN are the data members of your type. For example, if you had
+     * a custom type
+     *
+     *     struct MyType {
+     *         int myInt;
+     *         string myString;
+     *     };
+     *
+     * you would define the function
+     *
+     *     int hashCode(const MyType& obj) {
+     *         return hashCode(obj.myInt, obj.myString);
+     *     }
+     *
+     * Second, define operator== as follows:
+     *
+     *     bool operator== (const YourCustomType& lhs, const YourCustomType& rhs) {
+     *         return lhs.data1 == rhs.data1 &&
+     *                lhs.data2 == rhs.data2 &&
+     *                         ...
+     *                lhs.dataN == rhs.dataN;
+     *     }
+     *
+     * Using the MyType example from above, we'd write
+     *
+     *     bool operator== (const MyType& lhs, const MyType& rhs) {
+     *         return lhs.myInt == rhs.myInt && lhs.myString == rhs.myString;
+     *     }
+     *
+     * Hope this helps!
+     */
+
     struct Hasher {
         std::size_t operator()(const KeyType& key) const {
             return hashCode(key);
         }
     };
 
-    std::unordered_map<KeyType, ValueType, Hasher> mElems;
-    stanfordcpplib::collections::VersionTracker mVersion;
+    std::unordered_map<KeyType, ValueType, Hasher> _elements;
+    stanfordcpplib::collections::VersionTracker _version;
 
     /* Private methods */
 
@@ -447,7 +506,7 @@ public:
 
 template <typename KeyType, typename ValueType>
 HashMap<KeyType, ValueType>::HashMap(std::initializer_list<std::pair<const KeyType, ValueType>> list)
-        : mElems(list) {
+        : _elements(list) {
 }
 
 template <typename KeyType, typename ValueType>
@@ -466,18 +525,18 @@ KeyType HashMap<KeyType, ValueType>::back() const {
         error("HashMap::back: map is empty");
     }
 
-    return std::next(mElems.begin(), mElems.size() - 1)->first;
+    return std::next(_elements.begin(), _elements.size() - 1)->first;
 }
 
 template <typename KeyType, typename ValueType>
 void HashMap<KeyType, ValueType>::clear() {
-    mElems.clear();
-    mVersion.update();
+    _elements.clear();
+    _version.update();
 }
 
 template <typename KeyType, typename ValueType>
 bool HashMap<KeyType, ValueType>::containsKey(const KeyType& key) const {
-    return !!mElems.count(key);
+    return !!_elements.count(key);
 }
 
 template <typename KeyType, typename ValueType>
@@ -495,19 +554,19 @@ KeyType HashMap<KeyType, ValueType>::front() const {
 
 template <typename KeyType, typename ValueType>
 ValueType HashMap<KeyType, ValueType>::get(const KeyType& key) const {
-    auto itr = mElems.find(key);
-    return itr == mElems.end()? ValueType() : itr->second;
+    auto itr = _elements.find(key);
+    return itr == _elements.end()? ValueType() : itr->second;
 }
 
 template <typename KeyType, typename ValueType>
 bool HashMap<KeyType, ValueType>::isEmpty() const {
-    return mElems.empty();
+    return _elements.empty();
 }
 
 template <typename KeyType, typename ValueType>
 Vector<KeyType> HashMap<KeyType, ValueType>::keys() const {
     Vector<KeyType> keyset;
-    for (const auto& entry: mElems) {
+    for (const auto& entry: _elements) {
         keyset.add(entry.first);
     }
     return keyset;
@@ -515,7 +574,7 @@ Vector<KeyType> HashMap<KeyType, ValueType>::keys() const {
 
 template <typename KeyType, typename ValueType>
 void HashMap<KeyType, ValueType>::mapAll(std::function<void (const KeyType&, const ValueType&)> fn) const {
-    for (const auto& entry: mElems) {
+    for (const auto& entry: _elements) {
         fn(entry.first, entry.second);
     }
 }
@@ -523,9 +582,9 @@ void HashMap<KeyType, ValueType>::mapAll(std::function<void (const KeyType&, con
 template <typename KeyType, typename ValueType>
 void HashMap<KeyType, ValueType>::put(const KeyType& key, const ValueType& value) {
     int presize = size();
-    mElems[key] = value;
+    _elements[key] = value;
 
-    if (presize != size()) mVersion.update();
+    if (presize != size()) _version.update();
 }
 
 template <typename KeyType, typename ValueType>
@@ -538,10 +597,10 @@ HashMap<KeyType, ValueType>& HashMap<KeyType, ValueType>::putAll(const HashMap& 
 
 template <typename KeyType, typename ValueType>
 void HashMap<KeyType, ValueType>::remove(const KeyType& key) {
-    auto itr = mElems.find(key);
-    if (itr != mElems.end()) {
-        mElems.erase(itr);
-        mVersion.update();
+    auto itr = _elements.find(key);
+    if (itr != _elements.end()) {
+        _elements.erase(itr);
+        _version.update();
     }
 }
 
@@ -571,7 +630,7 @@ HashMap<KeyType, ValueType>& HashMap<KeyType, ValueType>::retainAll(const HashMa
 
 template <typename KeyType, typename ValueType>
 int HashMap<KeyType, ValueType>::size() const {
-    return mElems.size();
+    return _elements.size();
 }
 
 template <typename KeyType, typename ValueType>
@@ -584,7 +643,7 @@ std::string HashMap<KeyType, ValueType>::toString() const {
 template <typename KeyType, typename ValueType>
 Vector<ValueType> HashMap<KeyType, ValueType>::values() const {
     Vector<ValueType> values;
-    for (const auto& entry: mElems) {
+    for (const auto& entry: _elements) {
         values.add(entry.second);
     }
     return values;
@@ -593,9 +652,9 @@ Vector<ValueType> HashMap<KeyType, ValueType>::values() const {
 template <typename KeyType, typename ValueType>
 ValueType& HashMap<KeyType, ValueType>::operator [](const KeyType& key) {
     int presize = size();
-    ValueType& result = mElems[key];
+    ValueType& result = _elements[key];
 
-    if (presize != size()) mVersion.update();
+    if (presize != size()) _version.update();
     return result;
 }
 
@@ -639,12 +698,12 @@ HashMap<KeyType, ValueType>& HashMap<KeyType, ValueType>::operator *=(const Hash
 
 template <typename KeyType, typename ValueType>
 typename HashMap<KeyType, ValueType>::iterator HashMap<KeyType, ValueType>::begin() const {
-    return iterator({ &mVersion, mElems.begin(), mElems });
+    return iterator({ &_version, _elements.begin(), _elements });
 }
 
 template <typename KeyType, typename ValueType>
 typename HashMap<KeyType, ValueType>::iterator HashMap<KeyType, ValueType>::end() const {
-    return iterator({ &mVersion, mElems.end(), mElems });
+    return iterator({ &_version, _elements.end(), _elements });
 }
 
 template <typename KeyType, typename ValueType>

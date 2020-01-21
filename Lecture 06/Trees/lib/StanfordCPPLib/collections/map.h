@@ -4,6 +4,10 @@
  * This file exports the template class <code>Map</code>, which
  * maintains a collection of <i>key</i>-<i>value</i> pairs.
  * 
+ * @version 2019/04/09
+ * - renamed private members with underscore naming scheme for consistency
+ * @version 2019/02/04
+ * - changed internal implementation to wrap std collections
  * @version 2018/03/19
  * - added constructors that accept a comparison function
  * @version 2018/03/10
@@ -439,8 +443,9 @@ public:
     /**********************************************************************/
 
 private:
-    std::map<KeyType, ValueType, std::function<bool(const KeyType&, const KeyType&)>> mElements;
-    stanfordcpplib::collections::VersionTracker mVersion;
+    using MapType = std::map<KeyType, ValueType, std::function<bool(const KeyType&, const KeyType&)>>;
+    MapType _elements;
+    stanfordcpplib::collections::VersionTracker _version;
 
 public:
     /*
@@ -452,7 +457,7 @@ public:
      * difficult to understand for the average client.
      */
 
-    using const_iterator = stanfordcpplib::collections::ProjectingIterator<stanfordcpplib::collections::CheckedIterator<typename std::map<KeyType, ValueType>::const_iterator>>;
+    using const_iterator = stanfordcpplib::collections::ProjectingIterator<stanfordcpplib::collections::CheckedIterator<typename MapType::const_iterator>>;
     using iterator = const_iterator;
 
     const_iterator begin() const;
@@ -460,25 +465,25 @@ public:
 };
 
 template <typename KeyType, typename ValueType>
-Map<KeyType, ValueType>::Map() : mElements(std::less<KeyType>()) {
-
+Map<KeyType, ValueType>::Map() : _elements(stanfordcpplib::collections::checkedLess<KeyType>()) {
+    // Handled in initializer
 }
 
 template <typename KeyType, typename ValueType>
 Map<KeyType, ValueType>::Map(std::function<bool(const KeyType&, const KeyType&)> lessFunc)
-        : mElements(lessFunc) {
+        : _elements(lessFunc) {
 }
 
 template <typename KeyType, typename ValueType>
 Map<KeyType, ValueType>::Map(std::initializer_list<std::pair<const KeyType, ValueType>> list)
-        : mElements(list, std::less<KeyType>()) {
-
+        : _elements(list, stanfordcpplib::collections::checkedLess<KeyType>()) {
+    // Handled in initializer
 }
 
 template <typename KeyType, typename ValueType>
 Map<KeyType, ValueType>::Map(std::initializer_list<std::pair<const KeyType, ValueType>> list,
                              std::function<bool(const KeyType&, const KeyType&)> lessFunc)
-        : mElements(list, lessFunc) {
+        : _elements(list, lessFunc) {
 }
 
 template <typename KeyType, typename ValueType>
@@ -497,18 +502,18 @@ KeyType Map<KeyType, ValueType>::back() const {
     if (isEmpty()) {
         error("Map::back: map is empty");
     }
-    return mElements.rbegin()->first;
+    return _elements.rbegin()->first;
 }
 
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::clear() {
-    mElements.clear();
-    mVersion.update();
+    _elements.clear();
+    _version.update();
 }
 
 template <typename KeyType, typename ValueType>
 bool Map<KeyType, ValueType>::containsKey(const KeyType& key) const {
-    return !!mElements.count(key);
+    return !!_elements.count(key);
 }
 
 template <typename KeyType, typename ValueType>
@@ -521,24 +526,24 @@ KeyType Map<KeyType, ValueType>::front() const {
     if (isEmpty()) {
         error("Map::front: map is empty");
     }
-    return mElements.begin()->first;
+    return _elements.begin()->first;
 }
 
 template <typename KeyType, typename ValueType>
 ValueType Map<KeyType, ValueType>::get(const KeyType& key) const {
-    auto itr = mElements.find(key);
-    return itr == mElements.end()? ValueType() : itr->second;
+    auto itr = _elements.find(key);
+    return itr == _elements.end()? ValueType() : itr->second;
 }
 
 template <typename KeyType, typename ValueType>
 bool Map<KeyType, ValueType>::isEmpty() const {
-    return mElements.empty();
+    return _elements.empty();
 }
 
 template <typename KeyType,typename ValueType>
 Vector<KeyType> Map<KeyType, ValueType>::keys() const {
     Vector<KeyType> keyset;
-    for (const auto& entry: mElements) {
+    for (const auto& entry: _elements) {
         keyset.add(entry.first);
     }
     return keyset;
@@ -546,7 +551,7 @@ Vector<KeyType> Map<KeyType, ValueType>::keys() const {
 
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::mapAll(std::function<void (const KeyType&, const ValueType&)> fn) const {
-    for (const auto& entry: mElements) {
+    for (const auto& entry: _elements) {
         fn(entry.first, entry.second);
     }
 }
@@ -554,8 +559,9 @@ void Map<KeyType, ValueType>::mapAll(std::function<void (const KeyType&, const V
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::put(const KeyType& key,
                                   const ValueType& value) {
-    mElements[key] = value;
-    mVersion.update();
+    int presize = size();
+    _elements[key] = value;
+    if (presize != size()) _version.update();
 }
 
 template <typename KeyType, typename ValueType>
@@ -568,8 +574,8 @@ Map<KeyType, ValueType>& Map<KeyType, ValueType>::putAll(const Map& map2) {
 
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::remove(const KeyType& key) {
-    mElements.erase(key);
-    mVersion.update();
+    _elements.erase(key);
+    _version.update();
 }
 
 template <typename KeyType, typename ValueType>
@@ -598,7 +604,7 @@ Map<KeyType, ValueType>& Map<KeyType, ValueType>::retainAll(const Map& map2) {
 
 template <typename KeyType, typename ValueType>
 int Map<KeyType, ValueType>::size() const {
-    return mElements.size();
+    return _elements.size();
 }
 
 template <typename KeyType, typename ValueType>
@@ -611,7 +617,7 @@ std::string Map<KeyType, ValueType>::toString() const {
 template <typename KeyType,typename ValueType>
 Vector<ValueType> Map<KeyType, ValueType>::values() const {
     Vector<ValueType> values;
-    for (const auto& entry: mElements) {
+    for (const auto& entry: _elements) {
         values.add(entry.second);
     }
     return values;
@@ -620,10 +626,10 @@ Vector<ValueType> Map<KeyType, ValueType>::values() const {
 template <typename KeyType, typename ValueType>
 ValueType& Map<KeyType, ValueType>::operator [](const KeyType& key) {
     auto presize = size();
-    auto& result = mElements[key];
+    auto& result = _elements[key];
 
     /* If the size was updated, we must have inserted something. */
-    if (presize != size()) mVersion.update();
+    if (presize != size()) _version.update();
     return result;
 }
 
@@ -697,12 +703,12 @@ bool Map<KeyType, ValueType>::operator >=(const Map& map2) const {
 
 template <typename KeyType, typename ValueType>
 typename Map<KeyType, ValueType>::iterator Map<KeyType, ValueType>::begin() const {
-    return iterator({ &mVersion, mElements.begin(), mElements });
+    return iterator({ &_version, _elements.begin(), _elements });
 }
 
 template <typename KeyType, typename ValueType>
 typename Map<KeyType, ValueType>::iterator Map<KeyType, ValueType>::end() const {
-    return iterator({ &mVersion, mElements.end(), mElements });
+    return iterator({ &_version, _elements.end(), _elements });
 }
 
 /*

@@ -68,15 +68,28 @@ bool isTautonym(const string& word) {
 int main() {
     Lexicon english("EnglishWords.txt");
 
+    /* Build a map from letters to all the words that start with that letter. */
+    HashMap<char, Lexicon> wordsByFirstLetter;
+    for (string word: english) {
+        wordsByFirstLetter[word[0]].add(word);
+    }
 
-    return 0;
+    /* Have some fun! */
+    while (true) {
+        string input = getLine("Enter a letter: ");
+
+        /* Unlike lecture, we should validate that the input is
+         * (1) a single character and (2) that that character is a letter.
+         */
+        if (input.length() == 1 && isalpha(input[0])) {
+            /* Combining the tautonyms example from class and the words by letter
+             * example, print all tautonyms starting with that letter.
+             */
+            for (string word: wordsByFirstLetter[toLowerCase(input[0])]) {
+                if (isTautonym(word)) {
+                    cout << word << endl;
+                }
+            }
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
