@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <string>
-#include "random.h"
 #include "gwindow.h"
 #include "gobjects.h"
 #include "gthread.h"
@@ -16,28 +15,11 @@ void drawSquare(GWindow& window,
                 double x, double y,
                 double size);
 
-void drawSierpinskiCarpet(GWindow& window,
-                          double x, double y,
-                          double size,
-                          int order) {
-    if (order == 0) {
-        drawSquare(window, x, y, size);
-    } else {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (row != 1 || col != 1) {
-                    double newX = x + col * size / 3;
-                    double newY = y + row * size / 3;
 
-                    drawSierpinskiCarpet(window,
-                                         newX, newY,
-                                         size / 3,
-                                         order - 1);
-                }
-            }
-        }
-    }
-}
+
+
+
+
 
 
 /* Constants controlling the window size. */
