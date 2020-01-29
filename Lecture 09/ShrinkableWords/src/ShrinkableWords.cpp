@@ -9,23 +9,24 @@
 using namespace std;
 
 bool isShrinkableWord(const string& word, const Lexicon& english) {
-    /* Base case: Not a word? Then it's not a shrinkable word! */
+    /* Base Case 1: Things must be words to be shrinkable words. */
     if (!english.contains(word)) {
         return false;
     }
-    /* Base case: Is a single letter long! Then it's shrinkable! */
+    /* Base Case 2: If you're a single letter, then yes, you're shrinkable. */
     if (word.length() == 1) {
         return true;
     }
-    /* Recursive step: Try removing each character and see if any of them work. */
+
+    /* Recursive Case: Try removing each letter. */
     for (int i = 0; i < word.length(); i++) {
-        string remaining = word.substr(0, i) + word.substr(i + 1);
-        if (isShrinkableWord(remaining, english)) {
+        string shrunken = word.substr(0, i) + word.substr(i + 1);
+        if (isShrinkableWord(shrunken, english)) {
             return true;
         }
     }
 
-    /* None of those options worked? Definitely not shrinkable. */
+    /* Oh fiddlesticks. */
     return false;
 }
 
