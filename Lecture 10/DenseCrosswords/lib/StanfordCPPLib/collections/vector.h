@@ -4,6 +4,10 @@
  * This file exports the <code>Vector</code> class, which provides an
  * efficient, safe, convenient replacement for the array type in C++.
  *
+ * @version 2019/04/09
+ * - renamed private members with underscore naming scheme for consistency
+ * @version 2019/02/04
+ * - changed internal implementation to wrap std collections
  * @version 2018/09/06
  * - refreshed doc comments for new documentation generation
  * @version 2018/01/07
@@ -334,6 +338,15 @@ public:
     Vector<ValueType> subList(int start, int length) const;
 
     /**
+     * Returns a new vector containing the elements from the start position
+     * to the end of the vector.
+     *
+     * @throw ErrorException if start > size()
+     * @bigoh O(N)
+     */
+    Vector<ValueType> subList(int start) const;
+
+    /**
      * Converts the vector to a printable string representation
      * such as "{10, 20, 30, 40}".
      * @bigoh O(N)
@@ -363,6 +376,12 @@ public:
      * @bigoh O(N)
      */
     Vector operator +(const Vector& v2) const;
+
+    /**
+     * Produces a vector formed by appending the given element to this vector.
+     * @bigoh O(N)
+     */
+    Vector operator +(const ValueType& elem) const;
 
     /**
      * Adds all of the elements from <code>v2</code> to the end of this vector.
@@ -476,8 +495,8 @@ private:
                                                     std::vector<ValueType>>::type;
 
     /* Instance variables */
-    ContainerType mElems;
-    stanfordcpplib::collections::VersionTracker mVersion;
+    ContainerType _elements;
+    stanfordcpplib::collections::VersionTracker _version;
 
     /* Private methods */
 
@@ -488,8 +507,11 @@ private:
      * accept index parameters.
      * The prefix parameter represents a text string to place at the start of
      * the error message, generally to help indicate which member threw the error.
+     *
+     * We make prefix a const char* rather than a std::string to avoid having to
+     * construct and then destroy the prefix with each call.
      */
-    void checkIndex(int index, int min, int max, std::string prefix) const;
+    void checkIndex(int index, int min, int max, const char* prefix) const;
 
     /*
      * Hidden features
@@ -528,12 +550,12 @@ public:
 template <typename ValueType>
 Vector<ValueType>::Vector(int n, ValueType value) {
     if (n < 0) error("Cannot create a Vector with a negative number of elements.");
-    mElems.assign(n, value);
+    _elements.assign(n, value);
 }
 
 template <typename ValueType>
 Vector<ValueType>::Vector(std::initializer_list<ValueType> list)
-        : mElems(list) {
+        : _elements(list) {
 }
 
 /*
@@ -565,13 +587,13 @@ const ValueType& Vector<ValueType>::back() const {
     if (isEmpty()) {
         error("Vector::back: vector is empty");
     }
-    return mElems.back();
+    return _elements.back();
 }
 
 template <typename ValueType>
 void Vector<ValueType>::clear() {
-    mElems.clear();
-    mVersion.update();
+    _elements.clear();
+    _version.update();
 }
 
 template <typename ValueType>
@@ -594,44 +616,44 @@ const ValueType& Vector<ValueType>::front() const {
     if (isEmpty()) {
         error("Vector::front: vector is empty");
     }
-    return mElems.front();
+    return _elements.front();
 }
 
 template <typename ValueType>
 const ValueType& Vector<ValueType>::get(int index) const {
     checkIndex(index, 0, size()-1, "get");
-    return mElems[index];
+    return _elements[index];
 }
 
 template <typename ValueType>
 int Vector<ValueType>::indexOf(const ValueType& value) const {
-    auto result = std::find(mElems.begin(), mElems.end(), value);
-    if (result == mElems.end()) return -1;
-    return result - mElems.begin();
+    auto result = std::find(_elements.begin(), _elements.end(), value);
+    if (result == _elements.end()) return -1;
+    return result - _elements.begin();
 }
 
 template <typename ValueType>
 void Vector<ValueType>::insert(int index, const ValueType& value) {
     checkIndex(index, 0, size(), "insert");
-    mElems.insert(mElems.begin() + index, value);
-    mVersion.update();
+    _elements.insert(_elements.begin() + index, value);
+    _version.update();
 }
 
 template <typename ValueType>
 bool Vector<ValueType>::isEmpty() const {
-    return mElems.empty();
+    return _elements.empty();
 }
 
 template <typename ValueType>
 int Vector<ValueType>::lastIndexOf(const ValueType& value) const {
-    auto result = std::find(mElems.rbegin(), mElems.rend(), value);
-    if (result == mElems.rend()) return -1;
+    auto result = std::find(_elements.rbegin(), _elements.rend(), value);
+    if (result == _elements.rend()) return -1;
 
     /* These iterators are going in the reverse direction, and so the index they give is the number of
      * steps from the end of the range, not from the beginning. Reverse this before returning the
      * value.
      */
-    return (size() - 1) - (result - mElems.rbegin());
+    return (size() - 1) - (result - _elements.rbegin());
 }
 
 /*
@@ -642,7 +664,7 @@ int Vector<ValueType>::lastIndexOf(const ValueType& value) const {
  */
 template <typename ValueType>
 void Vector<ValueType>::mapAll(std::function<void (const ValueType&)> fn) const {
-    for (const auto& elem: mElems) {
+    for (const auto& elem: _elements) {
         fn(elem);
     }
 }
@@ -652,9 +674,9 @@ ValueType Vector<ValueType>::pop_back() {
     if (isEmpty()) {
         error("Vector::pop_back: vector is empty");
     }
-    auto result = mElems.back();
-    mElems.pop_back();
-    mVersion.update();
+    auto result = _elements.back();
+    _elements.pop_back();
+    _version.update();
     return result;
 }
 
@@ -663,9 +685,9 @@ ValueType Vector<ValueType>::pop_front() {
     if (isEmpty()) {
         error("Vector::pop_front: vector is empty");
     }
-    auto result = mElems.front();
-    mElems.erase(mElems.begin());
-    mVersion.update();
+    auto result = _elements.front();
+    _elements.erase(_elements.begin());
+    _version.update();
     return result;
 }
 
@@ -682,8 +704,8 @@ void Vector<ValueType>::push_front(const ValueType& value) {
 template <typename ValueType>
 void Vector<ValueType>::remove(int index) {
     checkIndex(index, 0, size() - 1, "remove");
-    mElems.erase(mElems.begin() + index);
-    mVersion.update();
+    _elements.erase(_elements.begin() + index);
+    _version.update();
 }
 
 template <typename ValueType>
@@ -712,18 +734,18 @@ void Vector<ValueType>::reverse() {
 template <typename ValueType>
 void Vector<ValueType>::set(int index, const ValueType& value) {
     checkIndex(index, 0, size()-1, "set");
-    mElems[index] = value;
+    _elements[index] = value;
 }
 
 template <typename ValueType>
 int Vector<ValueType>::size() const {
-    return mElems.size();
+    return _elements.size();
 }
 
 template <typename ValueType>
 void Vector<ValueType>::shuffle() {
     for (int i = 0; i < size() - 1; i++) {
-        std::swap(mElems[i], mElems[randomInteger(i, size() - 1)]);
+        std::swap(_elements[i], _elements[randomInteger(i, size() - 1)]);
     }
 }
 
@@ -747,6 +769,11 @@ Vector<ValueType> Vector<ValueType>::subList(int start, int length) const {
 }
 
 template <typename ValueType>
+Vector<ValueType> Vector<ValueType>::subList(int start) const {
+    return subList(start, size() - start);
+}
+
+template <typename ValueType>
 std::string Vector<ValueType>::toString() const {
     std::ostringstream os;
     os << *this;
@@ -766,13 +793,19 @@ ValueType& Vector<ValueType>::operator [](int index) {
 template <typename ValueType>
 const ValueType& Vector<ValueType>::operator [](int index) const {
     checkIndex(index, 0, size()-1, "operator []");
-    return mElems[index];
+    return _elements[index];
 }
 
 template <typename ValueType>
 Vector<ValueType> Vector<ValueType>::operator +(const Vector& v2) const {
     Vector<ValueType> result = *this;
     return result.addAll(v2);
+}
+
+template <typename ValueType>
+Vector<ValueType> Vector<ValueType>::operator +(const ValueType& elem) const {
+    Vector<ValueType> result = *this;
+    return result += elem;
 }
 
 template <typename ValueType>
@@ -817,7 +850,7 @@ bool Vector<ValueType>::operator >=(const Vector& v2) const {
 }
 
 template <typename ValueType>
-void Vector<ValueType>::checkIndex(int index, int min, int max, std::string prefix) const {
+void Vector<ValueType>::checkIndex(int index, int min, int max, const char* prefix) const {
     if (index < min || index > max) {
         std::ostringstream out;
         out << "Vector::" << prefix << ": index of " << index
@@ -877,24 +910,24 @@ std::istream& operator >>(std::istream& is, Vector<ValueType>& vec) {
  */
 template <typename ValueType>
 typename Vector<ValueType>::iterator Vector<ValueType>::begin() {
-    return { &mVersion, mElems.begin(), mElems };
+    return { &_version, _elements.begin(), _elements };
 }
 template <typename ValueType>
 typename Vector<ValueType>::const_iterator Vector<ValueType>::begin() const {
-    return { &mVersion, mElems.begin(), mElems };
+    return { &_version, _elements.begin(), _elements };
 }
 template <typename ValueType>
 typename Vector<ValueType>::iterator Vector<ValueType>::end() {
-    return { &mVersion, mElems.end(), mElems };
+    return { &_version, _elements.end(), _elements };
 }
 template <typename ValueType>
 typename Vector<ValueType>::const_iterator Vector<ValueType>::end() const {
-    return { &mVersion, mElems.end(), mElems };
+    return { &_version, _elements.end(), _elements };
 }
 
 template <typename ValueType>
 void Vector<ValueType>::updateVersion() {
-    mVersion.update();
+    _version.update();
 }
 
 /*

@@ -1,7 +1,3 @@
-/* File: ShrinkableWords.cpp
- *
- * A program to list off all long shrinkable words in English.
- */
 #include <iostream>
 #include <string>
 #include "vector.h"
@@ -10,13 +6,15 @@
 #include "simpio.h"
 using namespace std;
 
-bool isShrinkable(const string& word, const Lexicon& english, Vector<string>& shrinkingSequence) {
+bool isShrinkable(const string& word, const Lexicon& english, Vector<string>& sequence) {
     /* Base case 1: Non-words can't be shrinkable words. */
-    if (!english.contains(word)) return false;
+    if (!english.contains(word)) {
+        return false;
+    }
 
     /* Base case 2: Any word of length 1 is shrinkable. */
     if (word.length() == 1) {
-        shrinkingSequence.add(word);
+        sequence += word;
         return true;
     }
 
@@ -25,8 +23,8 @@ bool isShrinkable(const string& word, const Lexicon& english, Vector<string>& sh
      */
     for (int i = 0; i < word.length(); i++) {
         string shrunken = word.substr(0, i) + word.substr(i+1);
-        if (isShrinkable(shrunken, english, shrinkingSequence)) {
-            shrinkingSequence.add(word);
+        if (isShrinkable(shrunken, english, sequence)) {
+            sequence += word;
             return true;
         }
     }
@@ -42,13 +40,12 @@ int main() {
 
         Vector<string> shrinkingSequence;
         if (isShrinkable(word, english, shrinkingSequence)) {
-            cout << "It's shrinkable! Here we go: " << endl;
+            cout << "It's shrinkable! Here's how:" << endl;
             for (string word: shrinkingSequence) {
                 cout << word << endl;
             }
-            cout << endl;
         } else {
-            cout << "Alas, such shrinking may not be done." << endl;
+            cout << "Nothing to see here, folks; move along." << endl;
         }
     }
 }

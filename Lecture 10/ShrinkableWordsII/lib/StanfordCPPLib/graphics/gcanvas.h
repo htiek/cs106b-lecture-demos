@@ -3,6 +3,11 @@
  * ---------------
  *
  * @author Marty Stepp
+ * @version 2019/05/01
+ * - added createArgbPixel
+ * - bug fixes related to save / setPixels with alpha transparency
+ * @version 2019/03/07
+ * - added support for loading canvas directly from istream (htiek)
  * @version 2018/09/10
  * - added doc comments for new documentation generation
  * @version 2018/09/04
@@ -91,6 +96,12 @@ public:
     static const int WIDTH_HEIGHT_MAX;
 
     /**
+     * Creates a single ARGB integer from the given A-R-G-B components from 0-255.
+     * @throw ErrorException if alpha, red, green, or blue is not between 0-255 inclusive
+     */
+    static int createArgbPixel(int alpha, int red, int green, int blue);
+
+    /**
      * Creates a single RGB integer from the given R-G-B components from 0-255.
      * @throw ErrorException if red, green, or blue is not between 0-255 inclusive
      */
@@ -139,6 +150,13 @@ public:
      *        as a valid image file
      */
     GCanvas(const std::string& filename, QWidget* parent = nullptr);
+
+    /**
+     * Creates a canvas that loads its background layer pixel data from
+     * the given input stream
+     * @throw ErrorException if the given stream cannot be read as a valid image file
+     */
+    GCanvas(std::istream& filename, QWidget* parent = nullptr);
 
     /**
      * Creates an empty canvas of the specified size and optional background color.
@@ -447,6 +465,12 @@ public:
     virtual void load(const std::string& filename);
 
     /**
+     * Reads the canvas's pixel contents from the given input stream.
+     * @throw ErrorException if the given file does not exist or cannot be read
+     *        as a valid image file
+     */
+
+    /**
      * Removes the given graphical object from the foreground layer of the canvas,
      * if it was present.
      * @throw ErrorException if the graphical object is null
@@ -463,30 +487,6 @@ public:
      * Removes all graphical objects from the foreground layer of the canvas.
      */
     virtual void removeAll();
-
-    /**
-     * Removes the click listener from the canvas so that it will no longer
-     * call it when events occur.
-     */
-    virtual void removeClickListener();
-
-    /**
-     * Removes the double-click listener from the canvas so that it will no longer
-     * call it when events occur.
-     */
-    virtual void removeDoubleClickListener();
-
-    /**
-     * Removes the key listener from the canvas so that it will no longer
-     * call it when events occur.
-     */
-    virtual void removeKeyListener();
-
-    /**
-     * Removes the mouse listener from the canvas so that it will no longer
-     * call it when events occur.
-     */
-    virtual void removeMouseListener();
 
     /**
      * Instructs the canvas to redraw its layers.
@@ -538,39 +538,11 @@ public:
     /* @inherit */
     virtual void setBackground(const std::string& color) Q_DECL_OVERRIDE;
 
-    /**
-     * Sets a mouse listener on this canvas so that it will be called
-     * when the mouse is clicked on the canvas.
-     * Any existing click listener will be replaced.
-     */
-    virtual void setClickListener(GEventListener func);
-
-    /**
-     * Sets a mouse listener on this canvas so that it will be called
-     * when the mouse is clicked on the canvas.
-     * Any existing click listener will be replaced.
-     */
-    virtual void setClickListener(GEventListenerVoid func);
-
     /* @inherit */
     virtual void setColor(int color) Q_DECL_OVERRIDE;
 
     /* @inherit */
     virtual void setColor(const std::string& color) Q_DECL_OVERRIDE;
-
-    /**
-     * Sets a mouse listener on this canvas so that it will be called
-     * when the mouse is double-clicked on the canvas.
-     * Any existing double-click listener will be replaced.
-     */
-    virtual void setDoubleClickListener(GEventListener func);
-
-    /**
-     * Sets a mouse listener on this canvas so that it will be called
-     * when the mouse is double-clicked on the canvas.
-     * Any existing double-click listener will be replaced.
-     */
-    virtual void setDoubleClickListener(GEventListenerVoid func);
 
     /* @inherit */
     virtual void setFont(const QFont& font) Q_DECL_OVERRIDE;
@@ -589,28 +561,14 @@ public:
      * when any key is pressed or released on the canvas.
      * Any existing key listener will be replaced.
      */
-    virtual void setKeyListener(GEventListener func);
+    virtual void setKeyListener(GEventListener func) Q_DECL_OVERRIDE;
 
     /**
      * Sets a key listener on this canvas so that it will be called
      * when any key is pressed or released on the canvas.
      * Any existing key listener will be replaced.
      */
-    virtual void setKeyListener(GEventListenerVoid func);
-
-    /**
-     * Sets a mouse listener on this canvas so that it will be called
-     * when the mouse is moved or clicked on the canvas.
-     * Any existing mouse listener will be replaced.
-     */
-    virtual void setMouseListener(GEventListener func);
-
-    /**
-     * Sets a mouse listener on this canvas so that it will be called
-     * when the mouse is moved or clicked on the canvas.
-     * Any existing mouse listener will be replaced.
-     */
-    virtual void setMouseListener(GEventListenerVoid func);
+    virtual void setKeyListener(GEventListenerVoid func) Q_DECL_OVERRIDE;
 
     /**
      * Sets the color of the given x/y pixel in the background layer of the
@@ -719,8 +677,17 @@ private:
     friend class _Internal_QCanvas;
 
     void ensureBackgroundImage();
+
     void ensureBackgroundImageConstHack() const;
+
     void init(double width, double height, int rgbBackground, QWidget* parent);
+
+    /**
+     * Reads the canvas's pixel contents from the given stream.
+     * @return true if loaded successfully and false if the load failed
+     */
+    virtual bool loadFromStream(std::istream& input);
+
     void notifyOfResize(double width, double height);
 };
 
@@ -734,7 +701,7 @@ class _Internal_QCanvas : public QWidget, public _Internal_QWidget {
 
 public:
     _Internal_QCanvas(GCanvas* gcanvas, QWidget* parent = nullptr);
-
+    virtual void detach() Q_DECL_OVERRIDE;
     virtual void enterEvent(QEvent* event) Q_DECL_OVERRIDE;
     virtual void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
     virtual void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
