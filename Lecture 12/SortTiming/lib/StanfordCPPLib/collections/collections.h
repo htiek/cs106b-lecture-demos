@@ -8,6 +8,10 @@
  * Used to implement comparison operators like < and >= on collections.
  *
  * @author Marty Stepp
+ * @version 2019/04/12
+ * - added GenericSet unionWith, intersect, difference methods
+ * - added functions to read/write quoted char values
+ * - changed comment formatting
  * @version 2017/12/12
  * - added equalsDouble for collections of double values (can't compare with ==)
  * @version 2017/10/18
@@ -35,6 +39,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 
 #define INTERNAL_INCLUDE 1
 #include "error.h"
@@ -49,16 +54,38 @@
 // begin global namespace string read/writing functions from strlib.h
 
 /**
+ * Reads the next char from infile into the reference parameter ch.
+ * If the first character (other than whitespace) is either a single
+ * or a double quote, this function reads characters up to the
+ * matching quote, processing standard escape sequences as it goes.
+ * If not, readQuotedChar reads characters up to any of the characters
+ * in the string STRING_DELIMITERS in the implementation file.
+ *
+ * @private
+ */
+bool readQuotedChar(std::istream& is, char& ch, bool throwOnError = true);
+
+/**
  * Reads the next string from infile into the reference parameter str.
  * If the first character (other than whitespace) is either a single
  * or a double quote, this function reads characters up to the
  * matching quote, processing standard escape sequences as it goes.
- * If not, readString reads characters up to any of the characters
+ * If not, readQuoted String reads characters up to any of the characters
  * in the string STRING_DELIMITERS in the implementation file.
  *
  * @private
  */
 bool readQuotedString(std::istream& is, std::string& str, bool throwOnError = true);
+
+/**
+ * Writes the char ch to outfile surrounded by single quotes, converting
+ * special characters to escape sequences, as necessary.  If the optional
+ * parameter forceQuotes is explicitly set to false, quotes are included
+ * in the output only if necessary.
+ *
+ * @private
+ */
+std::ostream& writeQuotedChar(std::ostream& os, char ch, bool forceQuotes = true);
 
 /**
  * Writes the string str to outfile surrounded by double quotes, converting
@@ -85,6 +112,11 @@ bool stringNeedsQuoting(const std::string& str);
 template <typename ValueType>
 std::ostream& writeGenericValue(std::ostream& os, const ValueType& value, bool) {
     return os << std::boolalpha << value;
+}
+
+inline std::ostream& writeGenericValue(std::ostream& os, char value,
+                                       bool forceQuotes) {
+    return writeQuotedChar(os, value, forceQuotes);
 }
 
 inline std::ostream& writeGenericValue(std::ostream& os, const std::string& value,
@@ -115,6 +147,10 @@ inline std::string genericValueToString(const std::string& value,
 template <typename ValueType>
 bool readGenericValue(std::istream& is, ValueType& value) {
     return (bool) (is >> value);
+}
+
+inline bool readGenericValue(std::istream& is, char& value) {
+    return readQuotedChar(is, value, /* throwOnError */ false);
 }
 
 inline bool readGenericValue(std::istream& is, std::string& value) {
@@ -729,8 +765,12 @@ public:
 
     /* Comparison operators. */
     template <typename OtherItr> bool operator ==(const CheckedIterator<OtherItr>& rhs) const {
-        if (!mOwner || !rhs.mOwner) error("Cannot compare an uninitialized iterator.");
-        if ( mOwner !=  rhs.mOwner) error("Cannot compare iterators from two different containers.");
+        if (!mOwner || !rhs.mOwner) {
+            error("Cannot compare an uninitialized iterator.");
+        }
+        if ( mOwner !=  rhs.mOwner) {
+            error("Cannot compare iterators from two different containers.");
+        }
         return mIter == rhs.mIter;
     }
     template <typename OtherItr> bool operator !=(const CheckedIterator<OtherItr>& rhs) const {
@@ -1001,55 +1041,66 @@ private:
     Iterator mIter;
 };
 
-/*
+/**
  * Class: GenericSet<SetTraits>
- * ---------------------
+ * ----------------------------
  * This class stores a collection of distinct elements. SetTraits should be
  * a type containing the following:
  *
- *     typename ValueType:        whatever is stored in the map
- *     typename MapType:          should be a Map<ValueType, bool>
- *     static std::string name(): should return the name of the type.
+ *     typename ValueType:          whatever is stored in the map
+ *     typename MapType:            should be a Map<ValueType, bool>
+ *     static std::string name():   should return the name of the type.
+ *
+ * There's one more requirement: you need to define a function
+ *
+ *     template <typename... Args>
+ *        static MapType construct(Args&&... args)
+ *
+ * that constructs an internal MapType object with the specified arguments.
+ * This function should do something creative or clever to ensure that there
+ * is a nice compiler error generated in the event that the arguments are
+ * invalid, since otherwise the error is going to be deeply nested inside the
+ * GenericSet template.
  *
  * This is not meant to be used directly by students.
  */
 template <typename SetTraits>
 class GenericSet {
 public:
-    /*
+    /**
      * Utility alias to make things easier to work with.
      */
     using value_type = typename SetTraits::ValueType;
 
-    /*
+    /**
      * Constructor: GenericSet
      * Usage: GenericSet<ValueType, SetTraits> set;
-     * ------------------------------------------------
+     * --------------------------------------------
      * Initializes an empty set of the specified element type.
      */
     GenericSet() = default;
 
-    /*
+    /**
      * Constructor: GenericSet
      * Usage: GenericSet<ValueType, SetTraits> set {1, 2, 3};
-     * ----------------------------------------------------------
+     * ------------------------------------------------------
      * Initializes a new set that stores the given elements.
      */
     GenericSet(std::initializer_list<value_type> list);
 
-    /*
+    /**
      * Constructor: GenericSet
      * Usage: GenericSet<ValueType, SetTraits> set(... things for the map ...);
-     * ----------------------------------------------------------------------------
+     * ------------------------------------------------------------------------
      * Forwards the specified arguments down to the underlying Map type.
      */
     template <typename... Args>
-    GenericSet(Args... args);
+    explicit GenericSet(Args... args);
 
-    /*
+    /**
      * Constructor: GenericSet
      * Usage: GenericSet<ValueType, SetTraits> set({1, 2, 3}, ... things for the map ...);
-     * ---------------------------------------------------------------------------------------
+     * -----------------------------------------------------------------------------------
      * Constructs a set using the specified elements, forwarding the arguments to the
      * underlying map.
      */
@@ -1057,14 +1108,14 @@ public:
     GenericSet(std::initializer_list<value_type> list,
                Args... args);
 
-    /*
+    /**
      * Destructor: ~Set
      * ----------------
      * Frees any heap storage associated with this set.
      */
     virtual ~GenericSet() = default;
 
-    /*
+    /**
      * Method: add
      * Usage: set.add(value);
      * ----------------------
@@ -1074,18 +1125,23 @@ public:
      */
     void add(const value_type& value);
 
-    /*
+    /**
      * Method: addAll
      * Usage: set.addAll(set2);
      * ------------------------
      * Adds all elements of the given other set to this set.
      * You can also pass an initializer list such as {1, 2, 3}.
      * Returns a reference to this set.
+     *
+     * Note that this function modifies the current set in place rather than
+     * returning a new set. If you want a new set, consider using the + operator
+     * instead (not +=), which returns a newly created copy set.
+     *
      * Identical in behavior to the += operator.
      */
     GenericSet& addAll(const GenericSet& set);
 
-    /*
+    /**
      * Method: back
      * Usage: ValueType value = set.back();
      * ------------------------------------
@@ -1094,7 +1150,7 @@ public:
      */
     value_type back() const;
 
-    /*
+    /**
      * Method: clear
      * Usage: set.clear();
      * -------------------
@@ -1102,7 +1158,7 @@ public:
      */
     void clear();
 
-    /*
+    /**
      * Method: contains
      * Usage: if (set.contains(value)) ...
      * -----------------------------------
@@ -1110,7 +1166,7 @@ public:
      */
     bool contains(const value_type& value) const;
 
-    /*
+    /**
      * Method: containsAll
      * Usage: if (set.containsAll(set2)) ...
      * -------------------------------------
@@ -1121,7 +1177,23 @@ public:
      */
     bool containsAll(const GenericSet& set2) const;
 
-    /*
+    /**
+     * Method: difference
+     * Usage: set.difference(set2);
+     * ----------------------------
+     * Removes all elements of the given other set from this set.
+     * You can also pass an initializer list such as {1, 2, 3}.
+     * Returns a reference to this set.
+     *
+     * Note that this function modifies the current set in place rather than
+     * returning a new set. If you want a new set, consider using the - operator
+     * instead (not -=), which returns a newly created copy set.
+     *
+     * Identical in behavior to the -= operator and the removeAll function.
+     */
+    GenericSet& difference(const GenericSet& set);
+
+    /**
      * Method: equals
      * Usage: if (set.equals(set2)) ...
      * --------------------------------
@@ -1131,7 +1203,7 @@ public:
      */
     bool equals(const GenericSet& set2) const;
 
-    /*
+    /**
      * Method: first
      * Usage: ValueType value = set.first();
      * -------------------------------------
@@ -1142,7 +1214,7 @@ public:
      */
     value_type first() const;
 
-    /*
+    /**
      * Method: front
      * Usage: ValueType value = set.front();
      * -------------------------------------
@@ -1152,7 +1224,7 @@ public:
      */
     value_type front() const;
 
-    /*
+    /**
      * Method: insert
      * Usage: set.insert(value);
      * -------------------------
@@ -1161,7 +1233,24 @@ public:
      */
     void insert(const value_type& value);
 
-    /*
+    /**
+     * Method: intersect
+     * Usage: set.intersect(set2);
+     * ---------------------------
+     * Removes all elements from this set that are not contained in the given
+     * other set.
+     * You can also pass an initializer list such as {1, 2, 3}.
+     * Returns a reference to this set.
+     *
+     * Note that this function modifies the current set in place rather than
+     * returning a new set. If you want a new set, consider using the * operator
+     * instead (not *=), which returns a newly created copy set.
+     *
+     * Identical in behavior to the *= operator and the retainAll function.
+     */
+    GenericSet& intersect(const GenericSet& set);
+
+    /**
      * Method: isEmpty
      * Usage: if (set.isEmpty()) ...
      * -----------------------------
@@ -1169,7 +1258,7 @@ public:
      */
     bool isEmpty() const;
 
-    /*
+    /**
      * Method: isSubsetOf
      * Usage: if (set.isSubsetOf(set2)) ...
      * ------------------------------------
@@ -1180,7 +1269,7 @@ public:
      */
     bool isSubsetOf(const GenericSet& set2) const;
 
-    /*
+    /**
      * Method: isSupersetOf
      * Usage: if (set.isSupersetOf(set2)) ...
      * --------------------------------------
@@ -1192,17 +1281,19 @@ public:
      */
     bool isSupersetOf(const GenericSet& set2) const;
 
-    /*
+    /**
      * Method: mapAll
      * Usage: set.mapAll(fn);
      * ----------------------
      * Iterates through the elements of the set and calls <code>fn(value)</code>
-     * for each one.  The values are processed in ascending order, as defined
-     * by the comparison function.
+     * for each one.  The iteration order matches the underlying order in which
+     * the elements are stored.  For Set, this is sorted order according to the
+     * comparison function; for LinkedHashSet, this is the insertion order; and
+     * for HashSet, this is whatever order the elements happen to be in.
      */
     void mapAll(std::function<void (const value_type&)> fn) const;
 
-    /*
+    /**
      * Method: remove
      * Usage: set.remove(value);
      * -------------------------
@@ -1212,18 +1303,23 @@ public:
      */
     void remove(const value_type& value);
 
-    /*
+    /**
      * Method: removeAll
      * Usage: set.removeAll(set2);
      * ---------------------------
      * Removes all elements of the given other set from this set.
      * You can also pass an initializer list such as {1, 2, 3}.
      * Returns a reference to this set.
-     * Identical in behavior to the -= operator.
+     *
+     * Note that this function modifies the current set in place rather than
+     * returning a new set. If you want a new set, consider using the - operator
+     * instead (not -=), which returns a newly created copy set.
+     *
+     * Identical in behavior to the -= operator and the difference function.
      */
     GenericSet& removeAll(const GenericSet& set);
 
-    /*
+    /**
      * Method: retainAll
      * Usage: set.retainAll(set2);
      * ---------------------------
@@ -1231,11 +1327,16 @@ public:
      * other set.
      * You can also pass an initializer list such as {1, 2, 3}.
      * Returns a reference to this set.
-     * Identical in behavior to the *= operator.
+     *
+     * Note that this function modifies the current set in place rather than
+     * returning a new set. If you want a new set, consider using the * operator
+     * instead (not *=), which returns a newly created copy set.
+     *
+     * Identical in behavior to the *= operator and the intersect function.
      */
     GenericSet& retainAll(const GenericSet& set);
 
-    /*
+    /**
      * Method: size
      * Usage: count = set.size();
      * --------------------------
@@ -1243,7 +1344,7 @@ public:
      */
     int size() const;
 
-    /*
+    /**
      * Method: toString
      * Usage: string str = set.toString();
      * -----------------------------------
@@ -1251,7 +1352,25 @@ public:
      */
     std::string toString() const;
 
-    /*
+    /**
+     * Method: unionWith
+     * Usage: set.unionWith(set2);
+     * ---------------------------
+     * Adds all elements of the given other set to this set.
+     * You can also pass an initializer list such as {1, 2, 3}.
+     * Returns a reference to this set.
+     * Identical in behavior to the += operator and the addAll function.
+     *
+     * Note that this function modifies the current set in place rather than
+     * returning a new set. If you want a new set, consider using the + operator
+     * instead (not +=), which returns a newly created copy set.
+     *
+     * (Implementation note: This function cannot be named 'union' because
+     * that is a C/C++ keyword.)
+     */
+    GenericSet& unionWith(const GenericSet& set);
+
+    /**
      * Operator: ==
      * Usage: set1 == set2
      * -------------------
@@ -1260,7 +1379,7 @@ public:
      */
     bool operator ==(const GenericSet& set2) const;
 
-    /*
+    /**
      * Operator: !=
      * Usage: set1 != set2
      * -------------------
@@ -1269,7 +1388,7 @@ public:
      */
     bool operator !=(const GenericSet& set2) const;
 
-    /*
+    /**
      * Operators: <, >, <=, >=
      * Usage: if (set1 <= set2) ...
      * ...
@@ -1290,7 +1409,7 @@ public:
     template <typename Traits>
     friend bool operator >=(const GenericSet<Traits>& set1, const GenericSet<Traits>& set2);
 
-    /*
+    /**
      * Operator: +
      * Usage: set1 + set2
      *        set1 + element
@@ -1304,7 +1423,7 @@ public:
     GenericSet operator +(const GenericSet& set2) const;
     GenericSet operator +(const value_type& element) const;
 
-    /*
+    /**
      * Operator: *
      * Usage: set1 * set2
      * ------------------
@@ -1314,7 +1433,7 @@ public:
      */
     GenericSet operator *(const GenericSet& set2) const;
 
-    /*
+    /**
      * Operator: -
      * Usage: set1 - set2
      *        set1 - element
@@ -1329,7 +1448,7 @@ public:
     GenericSet operator -(const GenericSet& set2) const;
     GenericSet operator -(const value_type& element) const;
 
-    /*
+    /**
      * Operator: +=
      * Usage: set1 += set2;
      *        set1 += value;
@@ -1348,7 +1467,7 @@ public:
     GenericSet& operator +=(const GenericSet& set2);
     GenericSet& operator +=(const value_type& value);
 
-    /*
+    /**
      * Operator: *=
      * Usage: set1 *= set2;
      * --------------------
@@ -1358,7 +1477,7 @@ public:
      */
     GenericSet& operator *=(const GenericSet& set2);
 
-    /*
+    /**
      * Operator: -=
      * Usage: set1 -= set2;
      *        set1 -= value;
@@ -1401,8 +1520,8 @@ public:
     /**********************************************************************/
 
 private:
-    typename SetTraits::MapType map;  /* Map used to store the elements    */
-    bool removeFlag = false;          /* Flag to differentiate += and -=   */
+    typename SetTraits::MapType map = SetTraits::construct();  /* Map used to store the elements    */
+    bool removeFlag = false;                                   /* Flag to differentiate += and -=   */
 
 public:
     /*
@@ -1440,7 +1559,8 @@ public:
 };
 
 template <typename SetTraits>
-GenericSet<SetTraits>::GenericSet(std::initializer_list<value_type> list) {
+GenericSet<SetTraits>::GenericSet(std::initializer_list<value_type> list)
+    : map(SetTraits::construct()) {
     /* Can't do addAll because that would recursively try constructing a GenericSet.
      * Instead, directly add everything here. This becomes the focal point for
      * all initializer_list conversions.
@@ -1452,14 +1572,15 @@ GenericSet<SetTraits>::GenericSet(std::initializer_list<value_type> list) {
 
 template <typename SetTraits>
 template <typename... Args>
-GenericSet<SetTraits>::GenericSet(Args... args) : map(args...) {
-
+GenericSet<SetTraits>::GenericSet(Args... args) : GenericSet({}, std::move(args)...) {
+    // Handled by other constructor
 }
 
 template <typename SetTraits>
 template <typename... Args>
 GenericSet<SetTraits>::GenericSet(std::initializer_list<value_type> list, Args... args)
-    : map(args...) {
+    : map(SetTraits::construct(std::move(args)...)) {
+
     /* Can't do addAll because that would recursively try constructing a GenericSet.
      * Instead, directly add everything here. This becomes the focal point for
      * all initializer_list conversions.
@@ -1512,6 +1633,11 @@ bool GenericSet<SetTraits>::containsAll(const GenericSet& set2) const {
 }
 
 template <typename SetTraits>
+GenericSet<SetTraits>& GenericSet<SetTraits>::difference(const GenericSet<SetTraits>& set) {
+    return removeAll(set);
+}
+
+template <typename SetTraits>
 bool GenericSet<SetTraits>::equals(const GenericSet& set2) const {
     // optimization: if literally same set, stop
     if (this == &set2) {
@@ -1548,6 +1674,11 @@ GenericSet<SetTraits>::front() const {
 template <typename SetTraits>
 void GenericSet<SetTraits>::insert(const value_type& value) {
     map.put(value, true);
+}
+
+template <typename SetTraits>
+GenericSet<SetTraits>& GenericSet<SetTraits>::intersect(const GenericSet<SetTraits>& set) {
+    return retainAll(set);
 }
 
 template <typename SetTraits>
@@ -1605,6 +1736,12 @@ std::string GenericSet<SetTraits>::toString() const {
     os << *this;
     return os.str();
 }
+
+template <typename SetTraits>
+GenericSet<SetTraits>& GenericSet<SetTraits>::unionWith(const GenericSet<SetTraits>& set) {
+    return addAll(set);
+}
+
 
 /*
  * Implementation notes: set operators
@@ -1713,6 +1850,113 @@ std::istream& operator >>(std::istream& is, GenericSet<SetTraits>& set) {
     return stanfordcpplib::collections::readCollection(is, set, element, /* descriptor */ SetTraits::name() + "::operator >>");
 }
 
+
+/*
+ * Types used to automatically check whether a type is comparable using
+ * the < operator and whether a type supports operator== and hashCode.
+ *
+ * This is used to provide better compiler diagnostics to students when
+ * they try to instantiate our times incorrectly.
+ *
+ * Later on, when C++20 concepts are rolled out, we should consider
+ * replacing this code with concepts.
+ */
+template <typename T>
+struct IsLessThanComparable {
+private:
+    /* Use SFNIAE overloading to detect which of these two options to pick. */
+    struct Yes{};
+    struct No {};
+
+    template <typename U>
+    static Yes check(int,
+                     decltype(std::declval<U>() < std::declval<U>()) = 0);
+    template <typename U> static No  check(...);
+
+public:
+    static constexpr bool value =
+            std::conditional<std::is_same<decltype(check<T>(0)), Yes>::value,
+                             std::true_type,
+                             std::false_type>::type::value;
+};
+
+template <typename T>
+struct IsHashable {
+private:
+    /* Use SFNIAE overloading to detect which of these two options to pick. */
+    struct Yes{};
+    struct No {};
+
+    template <typename U>
+    static Yes check(int,
+                     decltype(hashCode(std::declval<U>())) = 0,
+                     decltype(std::declval<U>() == std::declval<U>()) = 0);
+    template <typename U> static No  check(...);
+
+public:
+    static constexpr bool value =
+            std::conditional<std::is_same<decltype(check<T>(0)), Yes>::value,
+                             std::true_type,
+                             std::false_type>::type::value;
+};
+
+/*
+ * Returns std::less<T>, except with a nice static assertion wrapped around it to
+ * make sure that in the event that T isn't comparable via <, the error message is
+ * more readable.
+ */
+template <typename T>
+std::function<bool (const T&, const T&)> checkedLess() {
+    static_assert(IsLessThanComparable<T>::value,
+                  "Oops! You tried using a type as a key in our Map without making it comparable. Click this error for more details.");
+    /*
+     * Hello CS106 students! If you got directed to this line of code in a compiler error,
+     * it probably means that you tried making a Map with a custom struct or class type
+     * as the key type or a Set with a custom struct as a value type.
+     *
+     * In order to have a type be a key type in a Map - or to have a type be a value type
+     * in a Set - it needs to have be comparable using the < operator. By default, types in C++
+     * can't be compared using the < operator, hence the error.
+     *
+     * There are two ways to fix this. The first option would simply be to not use your custom
+     * type as a key in the Map or value in a Set. This is probably the easiest option.
+     *
+     * The second way to fix this is to explicitly define an operator< function for your custom
+     * type. Here's the syntax for doing that:
+     *
+     *     bool operator< (const YourCustomType& lhs, const YourCustomType& rhs) {
+     *         return compareTo(lhs.data1, rhs.data1,
+     *                          lhs.data2, rhs.data2,
+     *                          ...
+     *                          lhs.dataN, rhs.dataN);
+     *     }
+     *
+     * where data1, data2, ... dataN are the data members of your type. For example, if you had
+     * a custom type
+     *
+     *     struct MyType {
+     *         int myInt;
+     *         string myString;
+     *     };
+     *
+     * you would define the function
+     *
+     *     bool operator< (const MyType& lhs, const MyType& rhs) {
+     *         return compareTo(lhs.myInt,    rhs.myInt,
+     *                          lhs.myString, rhs.myString);
+     *     }
+     *
+     * Hope this helps!
+     */
+    return std::less<T>();
+}
+
+/*
+ * Utility traits type that always contains a value that's false.
+ */
+template <typename... Args> struct Fail {
+    static constexpr bool value = false;
+};
 
 } // namespace collections
 } // namespace stanfordcpplib

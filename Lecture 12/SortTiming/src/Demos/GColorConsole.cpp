@@ -9,7 +9,7 @@ namespace {
          <html>
             <head></head>
             <body>
-                <pre style="font-size: 24pt;">)";
+                <pre>)";
 
     const string kHTMLFooter = R"(</pre>
             </body>
@@ -25,12 +25,11 @@ GColorConsole::~GColorConsole() {
     delete rdbuf();
 }
 
-/* Clears everything. */
-void GColorConsole::clear() {
+/* Clears everything. This will not update the display until updateDisplay is called. */
+void GColorConsole::clearDisplay() {
     /* Kick out any remaining contents, then clear out the contents. */
     flushBuffer();
     mContents.clear();
-    updateDisplay();
 }
 
 /* Whenever the streambuf is sync'ed, take the buffer contents and push them

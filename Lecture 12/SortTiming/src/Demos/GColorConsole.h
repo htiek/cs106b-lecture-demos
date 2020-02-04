@@ -31,8 +31,10 @@ public:
     std::string color() const;
     FontStyle style() const;
 
-    /* Clears all previously-rendered text. */
-    void clear();
+    /* Clears all previously-rendered text. This will not update the display; to do that,
+     * flush the stream afterwards..
+     */
+    void clearDisplay();
 
     /* Performs the specified block of code with the styling on the console changed
      * to the indicated values. This is useful if, say, you want to temporarily
