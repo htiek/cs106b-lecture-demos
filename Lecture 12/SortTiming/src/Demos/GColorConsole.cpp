@@ -8,7 +8,7 @@ namespace {
     const string kHTMLHeader = R"(
          <html>
             <head></head>
-            <body>
+            <body style="font-size:32pt;font-family:menlo;">
                 <pre>)";
 
     const string kHTMLFooter = R"(</pre>

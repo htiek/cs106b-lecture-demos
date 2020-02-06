@@ -5,6 +5,7 @@
 #include "TimedFunctions.h"
 #include "ginteractors.h"
 #include "gtimer.h"
+#include "gthread.h"
 #include <cstdint>
 #include <string>
 #include <limits>
@@ -124,7 +125,9 @@ namespace {
         if (!firstRun) {
             double duration = timer.elapsed();
             results.back() += duration;
-            *mConsole << "n = " << setw(10) << currTest.ns[nextN] << ": " << (duration / 1e6) << "ms" << endl;
+            GThread::runOnQtGuiThread([&] {
+                *mConsole << "n = " << setw(10) << currTest.ns[nextN] << ": " << (duration / 1e6) << "ms" << endl;
+            });
         }
 
         /* Step forward. */

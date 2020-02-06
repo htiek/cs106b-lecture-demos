@@ -68,6 +68,8 @@ const std::vector<Timing::Option> _kTimingOptions = {
     TIME_TEST("selection sort",             timeSelectionSort),
     TIME_TEST("insertion sort",             timeInsertionSort),
     TIME_TEST("insertion sort ascending",   timeInsertionSortAscending),
+    TIME_TEST("insertion sort ascending!",  timeInsertionSortAscendingBang),
+    TIME_TEST("insertion sort ascending!!", timeInsertionSortAscendingBangBang),
     TIME_TEST("insertion sort descending",  timeInsertionSortDescending),
     TIME_TEST("insertion sort random",      timeInsertionSort),
     TIME_TEST("split sort",                 timeSplitSort),
@@ -75,9 +77,9 @@ const std::vector<Timing::Option> _kTimingOptions = {
     TIME_TEST("mergesort",                  timeMergesort),
     TIME_TEST("mergesort!",                 timeMergesortBang),
     TIME_TEST("mergesort!!",                timeMergesortBangBang),
-    TIME_TEST("hybrid mergesort",           timeMergesort),
-    TIME_TEST("hybrid mergesort!",          timeMergesortBang),
-    TIME_TEST("hybrid mergesort!!",         timeMergesortBangBang),
+    TIME_TEST("hybrid mergesort",           timeHybridMergesort),
+    TIME_TEST("hybrid mergesort!",          timeHybridMergesortBang),
+    TIME_TEST("hybrid mergesort!!",         timeHybridMergesortBangBang),
 };
 
 #endif

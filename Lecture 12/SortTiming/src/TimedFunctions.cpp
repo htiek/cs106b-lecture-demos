@@ -65,11 +65,9 @@ void merge(Container& result, const Container& lhs, const Container& rhs) {
 }
 
 void splitSort(Container& v) {
-    Container lhs, rhs;
-    for (size_t i = 0; i < v.size(); i++) {
-        if (i % 2 == 0) lhs.push_back(v[i]);
-        else rhs.push_back(v[i]);
-    }
+    int half = v.size() / 2;
+    Container lhs(v.begin(), v.begin() + half);
+    Container rhs(v.begin() + half, v.end());
 
     insertionSort(lhs);
     insertionSort(rhs);
@@ -77,14 +75,12 @@ void splitSort(Container& v) {
 }
 
 void doubleSplitSort(Container& v) {
-    Container a, b, c, d;
-    for (size_t i = 0; i < v.size(); i++) {
-        if (i % 4 == 0) a.push_back(v[i]);
-        else if (i % 4 == 1) b.push_back(v[i]);
-        else if (i % 4 == 2) c.push_back(v[i]);
-        else d.push_back(v[i]);
-    }
+    int quarter = v.size() / 4;
 
+    Container a(v.begin(), v.begin() + quarter);
+    Container b(v.begin() + quarter, v.begin() + 2 * quarter);
+    Container c(v.begin() + 2 * quarter, v.begin() + 3 * quarter);
+    Container d(v.begin() + 3 * quarter, v.end());
     insertionSort(a);
     insertionSort(b);
     insertionSort(c);
@@ -99,11 +95,9 @@ void doubleSplitSort(Container& v) {
 void mergesort(Container& v) {
     if (v.size() <= 1) return;
 
-    Container lhs, rhs;
-    for (size_t i = 0; i < v.size(); i++) {
-        if (i % 2 == 0) lhs.push_back(v[i]);
-        else rhs.push_back(v[i]);
-    }
+    int half = v.size() / 2;
+    Container lhs(v.begin(), v.begin() + half);
+    Container rhs(v.begin() + half, v.end());
 
     mergesort(lhs);
     mergesort(rhs);
@@ -116,11 +110,9 @@ void hybridMergesort(Container& v) {
         return;
     }
 
-    Container lhs, rhs;
-    for (size_t i = 0; i < v.size(); i++) {
-        if (i % 2 == 0) lhs.push_back(v[i]);
-        else rhs.push_back(v[i]);
-    }
+    int half = v.size() / 2;
+    Container lhs(v.begin(), v.begin() + half);
+    Container rhs(v.begin() + half, v.end());
 
     hybridMergesort(lhs);
     hybridMergesort(rhs);
@@ -166,45 +158,51 @@ Timing::TimeTest timeSortingAlgorithm(const string& name,
             sortAlgorithm(seq);
             timer.stop();
         },
-        Timing::linRange(kBaseSize * multiplier, kBaseSize * 10 * multiplier, kBaseSize / 2 * multiplier),
+        Timing::linRange(kBaseSize * multiplier, kBaseSize * 10 * multiplier, kBaseSize * multiplier),
         { 1 },
         name
     };
 }
 
-auto timeSelectionSort() {
+Timing::TimeTest timeSelectionSort() {
     return timeSortingAlgorithm("Selection Sort", selectionSort, randomOrderSequence, 1);
 }
-auto timeInsertionSort() {
+Timing::TimeTest timeInsertionSort() {
     return timeSortingAlgorithm("Insertion Sort", insertionSort, randomOrderSequence, 1);
 }
-auto timeInsertionSortAscending() {
+Timing::TimeTest timeInsertionSortAscending() {
     return timeSortingAlgorithm("Insertion Sort", insertionSort, ascendingOrderSequence, 1);
 }
-auto timeInsertionSortDescending() {
+Timing::TimeTest timeInsertionSortAscendingBang() {
+    return timeSortingAlgorithm("Insertion Sort", insertionSort, ascendingOrderSequence, 10);
+}
+Timing::TimeTest timeInsertionSortAscendingBangBang() {
+    return timeSortingAlgorithm("Insertion Sort", insertionSort, ascendingOrderSequence, 100);
+}
+Timing::TimeTest timeInsertionSortDescending() {
     return timeSortingAlgorithm("Insertion Sort", insertionSort, descendingOrderSequence, 1);
 }
-auto timeSplitSort() {
+Timing::TimeTest timeSplitSort() {
     return timeSortingAlgorithm("\"Split Sort\"", splitSort, randomOrderSequence, 1);
 }
-auto timeDoubleSplitSort() {
-    return timeSortingAlgorithm("\"Split Sort\"", doubleSplitSort, randomOrderSequence, 1);
+Timing::TimeTest timeDoubleSplitSort() {
+    return timeSortingAlgorithm("\"Double Split Sort\"", doubleSplitSort, randomOrderSequence, 1);
 }
-auto timeMergesort() {
+Timing::TimeTest timeMergesort() {
     return timeSortingAlgorithm("Mergesort", mergesort, randomOrderSequence, 1);
 }
-auto timeMergesortBang() {
+Timing::TimeTest timeMergesortBang() {
     return timeSortingAlgorithm("Mergesort", mergesort, randomOrderSequence, 10);
 }
-auto timeMergesortBangBang() {
+Timing::TimeTest timeMergesortBangBang() {
     return timeSortingAlgorithm("Mergesort", mergesort, randomOrderSequence, 100);
 }
-auto timeHybridMergesort() {
-    return timeSortingAlgorithm("Mergesort", hybridMergesort, randomOrderSequence, 1);
+Timing::TimeTest timeHybridMergesort() {
+    return timeSortingAlgorithm("Hybrid Mergesort", hybridMergesort, randomOrderSequence, 1);
 }
-auto timeHybridMergesortBang() {
-    return timeSortingAlgorithm("Mergesort", hybridMergesort, randomOrderSequence, 10);
+Timing::TimeTest timeHybridMergesortBang() {
+    return timeSortingAlgorithm("Hybrid Mergesort", hybridMergesort, randomOrderSequence, 10);
 }
-auto timeHybridMergesortBangBang() {
-    return timeSortingAlgorithm("Mergesort", hybridMergesort, randomOrderSequence, 100);
+Timing::TimeTest timeHybridMergesortBangBang() {
+    return timeSortingAlgorithm("Hybrid Mergesort", hybridMergesort, randomOrderSequence, 100);
 }

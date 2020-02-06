@@ -53,6 +53,6 @@ const std::vector<GUI::GUIOption> _kGUIOptions = {
 const GUI::Constructor* _kDefault = DEFAULT_HANDLER(makePerformanceGUI);
 
 /* Edit this string to change the name of the GUI. */
-const std::string _kGUITitle = "Big-O Notation";
+const std::string _kGUITitle = "Sorting Algorithms";
 
 #endif
