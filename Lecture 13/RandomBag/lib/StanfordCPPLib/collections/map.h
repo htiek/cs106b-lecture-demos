@@ -4,6 +4,10 @@
  * This file exports the template class <code>Map</code>, which
  * maintains a collection of <i>key</i>-<i>value</i> pairs.
  * 
+ * @version 2019/04/09
+ * - renamed private members with underscore naming scheme for consistency
+ * @version 2019/02/04
+ * - changed internal implementation to wrap std collections
  * @version 2018/03/19
  * - added constructors that accept a comparison function
  * @version 2018/03/10
@@ -439,52 +443,9 @@ public:
     /**********************************************************************/
 
 private:
-    static_assert(stanfordcpplib::collections::IsLessThanComparable<KeyType>::value,
-                  "Oops! You tried using a type as a key in our Map without making it comparable. Click this error for more details.");
-    /*
-     * Hello CS106 students! If you got directed to this line of code in a compiler error,
-     * it probably means that you tried making a Map with a custom struct or class type
-     * as the key type or a Set with a custom struct as a value type.
-     *
-     * In order to have a type be a key type in a Map - or to have a type be a value type
-     * in a Set - it needs to have be comparable using the < operator. By default, types in C++
-     * can't be compared using the < operator, hence the error.
-     *
-     * There are two ways to fix this. The first option would simply be to not use your custom
-     * type as a key in the Map or value in a Set. This is probably the easiest option.
-     *
-     * The second way to fix this is to explicitly define an operator< function for your custom
-     * type. Here's the syntax for doing that:
-     *
-     *     bool operator< (const YourCustomType& lhs, const YourCustomType& rhs) {
-     *         return compareTo(lhs.data1, rhs.data1,
-     *                          lhs.data2, rhs.data2,
-     *                          ...
-     *                          lhs.dataN, rhs.dataN);
-     *     }
-     *
-     * where data1, data2, ... dataN are the data members of your type. For example, if you had
-     * a custom type
-     *
-     *     struct MyType {
-     *         int myInt;
-     *         string myString;
-     *     };
-     *
-     * you would define the function
-     *
-     *     bool operator< (const MyType& lhs, const MyType& rhs) {
-     *         return compareTo(lhs.myInt,    rhs.myInt,
-     *                          lhs.myString, rhs.myString);
-     *     }
-     *
-     * Hope this helps!
-     */
-
-
     using MapType = std::map<KeyType, ValueType, std::function<bool(const KeyType&, const KeyType&)>>;
-    MapType mElements;
-    stanfordcpplib::collections::VersionTracker mVersion;
+    MapType _elements;
+    stanfordcpplib::collections::VersionTracker _version;
 
 public:
     /*
@@ -504,25 +465,25 @@ public:
 };
 
 template <typename KeyType, typename ValueType>
-Map<KeyType, ValueType>::Map() : mElements(std::less<KeyType>()) {
-
+Map<KeyType, ValueType>::Map() : _elements(stanfordcpplib::collections::checkedLess<KeyType>()) {
+    // Handled in initializer
 }
 
 template <typename KeyType, typename ValueType>
 Map<KeyType, ValueType>::Map(std::function<bool(const KeyType&, const KeyType&)> lessFunc)
-        : mElements(lessFunc) {
+        : _elements(lessFunc) {
 }
 
 template <typename KeyType, typename ValueType>
 Map<KeyType, ValueType>::Map(std::initializer_list<std::pair<const KeyType, ValueType>> list)
-        : mElements(list, std::less<KeyType>()) {
-
+        : _elements(list, stanfordcpplib::collections::checkedLess<KeyType>()) {
+    // Handled in initializer
 }
 
 template <typename KeyType, typename ValueType>
 Map<KeyType, ValueType>::Map(std::initializer_list<std::pair<const KeyType, ValueType>> list,
                              std::function<bool(const KeyType&, const KeyType&)> lessFunc)
-        : mElements(list, lessFunc) {
+        : _elements(list, lessFunc) {
 }
 
 template <typename KeyType, typename ValueType>
@@ -541,18 +502,18 @@ KeyType Map<KeyType, ValueType>::back() const {
     if (isEmpty()) {
         error("Map::back: map is empty");
     }
-    return mElements.rbegin()->first;
+    return _elements.rbegin()->first;
 }
 
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::clear() {
-    mElements.clear();
-    mVersion.update();
+    _elements.clear();
+    _version.update();
 }
 
 template <typename KeyType, typename ValueType>
 bool Map<KeyType, ValueType>::containsKey(const KeyType& key) const {
-    return !!mElements.count(key);
+    return !!_elements.count(key);
 }
 
 template <typename KeyType, typename ValueType>
@@ -565,24 +526,24 @@ KeyType Map<KeyType, ValueType>::front() const {
     if (isEmpty()) {
         error("Map::front: map is empty");
     }
-    return mElements.begin()->first;
+    return _elements.begin()->first;
 }
 
 template <typename KeyType, typename ValueType>
 ValueType Map<KeyType, ValueType>::get(const KeyType& key) const {
-    auto itr = mElements.find(key);
-    return itr == mElements.end()? ValueType() : itr->second;
+    auto itr = _elements.find(key);
+    return itr == _elements.end()? ValueType() : itr->second;
 }
 
 template <typename KeyType, typename ValueType>
 bool Map<KeyType, ValueType>::isEmpty() const {
-    return mElements.empty();
+    return _elements.empty();
 }
 
 template <typename KeyType,typename ValueType>
 Vector<KeyType> Map<KeyType, ValueType>::keys() const {
     Vector<KeyType> keyset;
-    for (const auto& entry: mElements) {
+    for (const auto& entry: _elements) {
         keyset.add(entry.first);
     }
     return keyset;
@@ -590,7 +551,7 @@ Vector<KeyType> Map<KeyType, ValueType>::keys() const {
 
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::mapAll(std::function<void (const KeyType&, const ValueType&)> fn) const {
-    for (const auto& entry: mElements) {
+    for (const auto& entry: _elements) {
         fn(entry.first, entry.second);
     }
 }
@@ -599,8 +560,8 @@ template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::put(const KeyType& key,
                                   const ValueType& value) {
     int presize = size();
-    mElements[key] = value;
-    if (presize != size()) mVersion.update();
+    _elements[key] = value;
+    if (presize != size()) _version.update();
 }
 
 template <typename KeyType, typename ValueType>
@@ -613,8 +574,8 @@ Map<KeyType, ValueType>& Map<KeyType, ValueType>::putAll(const Map& map2) {
 
 template <typename KeyType, typename ValueType>
 void Map<KeyType, ValueType>::remove(const KeyType& key) {
-    mElements.erase(key);
-    mVersion.update();
+    _elements.erase(key);
+    _version.update();
 }
 
 template <typename KeyType, typename ValueType>
@@ -643,7 +604,7 @@ Map<KeyType, ValueType>& Map<KeyType, ValueType>::retainAll(const Map& map2) {
 
 template <typename KeyType, typename ValueType>
 int Map<KeyType, ValueType>::size() const {
-    return mElements.size();
+    return _elements.size();
 }
 
 template <typename KeyType, typename ValueType>
@@ -656,7 +617,7 @@ std::string Map<KeyType, ValueType>::toString() const {
 template <typename KeyType,typename ValueType>
 Vector<ValueType> Map<KeyType, ValueType>::values() const {
     Vector<ValueType> values;
-    for (const auto& entry: mElements) {
+    for (const auto& entry: _elements) {
         values.add(entry.second);
     }
     return values;
@@ -665,10 +626,10 @@ Vector<ValueType> Map<KeyType, ValueType>::values() const {
 template <typename KeyType, typename ValueType>
 ValueType& Map<KeyType, ValueType>::operator [](const KeyType& key) {
     auto presize = size();
-    auto& result = mElements[key];
+    auto& result = _elements[key];
 
     /* If the size was updated, we must have inserted something. */
-    if (presize != size()) mVersion.update();
+    if (presize != size()) _version.update();
     return result;
 }
 
@@ -742,12 +703,12 @@ bool Map<KeyType, ValueType>::operator >=(const Map& map2) const {
 
 template <typename KeyType, typename ValueType>
 typename Map<KeyType, ValueType>::iterator Map<KeyType, ValueType>::begin() const {
-    return iterator({ &mVersion, mElements.begin(), mElements });
+    return iterator({ &_version, _elements.begin(), _elements });
 }
 
 template <typename KeyType, typename ValueType>
 typename Map<KeyType, ValueType>::iterator Map<KeyType, ValueType>::end() const {
-    return iterator({ &mVersion, mElements.end(), mElements });
+    return iterator({ &_version, _elements.end(), _elements });
 }
 
 /*

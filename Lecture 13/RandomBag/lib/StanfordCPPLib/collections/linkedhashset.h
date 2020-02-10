@@ -5,6 +5,8 @@
  * implements an efficient abstraction for storing sets of values.
  * 
  * @author Marty Stepp
+ * @version 2019/02/04
+ * - changed internal implementation to wrap std collections
  * @version 2018/03/10
  * - added methods front, back
  * @version 2016/09/24
@@ -50,6 +52,48 @@ namespace stanfordcpplib {
             using MapType   = LinkedHashMap<T, bool>;
             static std::string name() {
                 return "LinkedHashSet";
+            }
+
+            /* You can default-construct a LinkedHashSet. */
+            static MapType construct() {
+                return {};
+            }
+
+            /* However, you can't pass in any other arguments. */
+            template <typename... Args>
+            static void construct(Args&&...) {
+                static_assert(Fail<Args...>::value, "Oops! Seems like you tried to initialize a LinkedHashSet incorrectly. Click here for details.");
+
+                /*
+                 * Hello student! If you are reading this message, it means that you tried to
+                 * initialize a LinkedHashSet improperly. For example, you might have tried to
+                 * write something like this:
+                 *
+                 *     LinkedHashSet<int> mySet = 137; // Oops!
+                 *
+                 * Here, for example, you're trying to assign an int to a LinkedHashSet<int>.
+                 *
+                 * or perhaps you had a function like this one:
+                 *
+                 *     void myFunction(LinkedHashSet<int>& mySet);
+                 *
+                 * and you called it by writing
+                 *
+                 *     myFunction(someSet + someOtherSet); // Oops!
+                 *     myFunction({ });                    // Oops!
+                 *
+                 * In these cases, you're trying to pass a value into a function that takes
+                 * its argument by (non-const) reference. C++ doesn't allow you to do this.
+                 *
+                 * To see where the actual error comes from, look in the list of error messages
+                 * in Qt Creator. You should see a line that says "required from here" that
+                 * points somewhere in your code. That's the actual line you wrote that caused
+                 * the problem, so double-click on that error message and see where it takes
+                 * you. Now you know where to look!
+                 *
+                 * Hope this helps!
+                 */
+                error("static_assert succeeded?");
             }
         };
     }

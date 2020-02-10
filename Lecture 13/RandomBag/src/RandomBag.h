@@ -12,10 +12,7 @@
 class RandomBag {
 public:
     void add(int value);
-    int removeRandom();
-
-    int size() const;
-    bool isEmpty() const;
+    int  removeRandom();
 
 private:
     Vector<int> elems;

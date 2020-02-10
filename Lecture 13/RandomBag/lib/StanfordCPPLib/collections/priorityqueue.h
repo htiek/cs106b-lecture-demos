@@ -4,6 +4,8 @@
  * This file exports the <code>PriorityQueue</code> class, a
  * collection in which values are processed in priority order.
  * 
+ * @version 2019/04/09
+ * - renamed private members with underscore naming scheme for consistency
  * @version 2016/11/07
  * - small const-correctness bug fix in front() / back() (courtesy Truman Cranor)
  * @version 2016/10/14
@@ -20,9 +22,9 @@
  * @version 2015/07/05
  * - using global hashing functions rather than global variables
  * @version 2015/06/22
- * - added optional compiler flag PQUEUE_PRINT_IN_HEAP_ORDER to indicate
+ * - added optional compiler flag SPL_PQUEUE_PRINT_IN_HEAP_ORDER to indicate
  *   that PQ should be printed in heap-internal order rather than sorted order
- * - added optional compiler flag PQUEUE_ALLOW_HEAP_ACCESS and corresponding
+ * - added optional compiler flag SPL_PQUEUE_ALLOW_HEAP_ACCESS and corresponding
  *   semi-private methods to access value/priority at a given index
  *   (wanted internally for some testing and for practice exam problems;
  *    not meant to be called explicitly by students or most clients)
@@ -251,7 +253,7 @@ public:
     bool operator ==(const PriorityQueue& pq2) const;
     bool operator !=(const PriorityQueue& pq2) const;
 
-#ifdef PQUEUE_COMPARISON_OPERATORS_ENABLED
+#ifdef SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
     /*
      * Operators: <, <=, >, >=
      * Usage: if (pq1 < pq2) ...
@@ -264,7 +266,7 @@ public:
     bool operator <=(const PriorityQueue& pq2) const;
     bool operator >(const PriorityQueue& pq2) const;
     bool operator >=(const PriorityQueue& pq2) const;
-#endif // PQUEUE_COMPARISON_OPERATORS_ENABLED
+#endif // SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
 
     /* Private section */
 
@@ -290,12 +292,12 @@ private:
     };
 
     /* Instance variables */
-    Vector<HeapEntry> heap;
-    long enqueueCount = 0;
+    Vector<HeapEntry> _heap;
+    long _enqueueCount = 0;
 
-#ifdef PQUEUE_COMPARISON_OPERATORS_ENABLED
+#ifdef SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
     int pqCompare(const PriorityQueue& other) const;
-#endif // PQUEUE_COMPARISON_OPERATORS_ENABLED
+#endif // SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
 
 public:
     /* private implentation section */
@@ -303,10 +305,10 @@ public:
     template <typename Collection>
     friend int stanfordcpplib::collections::compare(const Collection& pq1, const Collection& pq2);
 
-#ifdef PQUEUE_ALLOW_HEAP_ACCESS
+#ifdef SPL_PQUEUE_ALLOW_HEAP_ACCESS
     const ValueType& __getValueFromHeap(int index) const;
     double __getPriorityFromHeap(int index) const;
-#endif // PQUEUE_ALLOW_HEAP_ACCESS
+#endif // SPL_PQUEUE_ALLOW_HEAP_ACCESS
 };
 
 template <typename ValueType>
@@ -327,7 +329,7 @@ ValueType & PriorityQueue<ValueType>::back() {
     if (isEmpty()) {
         error("PriorityQueue::back: Attempting to read back of an empty queue");
     }
-    return heap.back().value;
+    return _heap.back().value;
 }
 
 /*
@@ -345,10 +347,10 @@ void PriorityQueue<ValueType>::changePriority(ValueType value, double newPriorit
     }
 
     /* Find the element to change. */
-    auto itr = std::find_if(heap.begin(), heap.end(), [&](const HeapEntry& entry) {
+    auto itr = std::find_if(_heap.begin(), _heap.end(), [&](const HeapEntry& entry) {
         return entry.value == value;
     });
-    if (itr == heap.end()) {
+    if (itr == _heap.end()) {
         error("PriorityQueue::changePriority: Element not found in priority queue.");
     }
 
@@ -356,13 +358,13 @@ void PriorityQueue<ValueType>::changePriority(ValueType value, double newPriorit
         error("PriorityQueue::changePriority: new priority cannot be less urgent than current priority.");
     }
     itr->priority = newPriority;
-    std::push_heap(heap.begin(), itr + 1);
+    std::push_heap(_heap.begin(), itr + 1);
 }
 
 template <typename ValueType>
 void PriorityQueue<ValueType>::clear() {
-    heap.clear();
-    enqueueCount = 0;   // BUGFIX 2014/10/10: was previously using garbage unassigned value
+    _heap.clear();
+    _enqueueCount = 0;   // BUGFIX 2014/10/10: was previously using garbage unassigned value
 }
 
 /*
@@ -377,9 +379,9 @@ ValueType PriorityQueue<ValueType>::dequeue() {
         error("PriorityQueue::dequeue: Attempting to dequeue an empty queue");
     }
 
-    ValueType result = heap[0].value;
-    std::pop_heap(heap.begin(), heap.end());
-    heap.pop_back();
+    ValueType result = _heap[0].value;
+    std::pop_heap(_heap.begin(), _heap.end());
+    _heap.pop_back();
     return result;
 }
 
@@ -392,8 +394,8 @@ void PriorityQueue<ValueType>::enqueue(const ValueType& value, double priority) 
         priority = 0.0;
     }
 
-    heap.add({ value, priority, enqueueCount++ });
-    std::push_heap(heap.begin(), heap.end());
+    _heap.add({ value, priority, _enqueueCount++ });
+    std::push_heap(_heap.begin(), _heap.end());
 }
 
 template <typename ValueType>
@@ -423,12 +425,12 @@ ValueType& PriorityQueue<ValueType>::front() {
     if (isEmpty()) {
         error("PriorityQueue::front: Attempting to read front of an empty queue");
     }
-    return heap[0].value;
+    return _heap[0].value;
 }
 
 template <typename ValueType>
 bool PriorityQueue<ValueType>::isEmpty() const {
-    return heap.size() == 0;
+    return _heap.size() == 0;
 }
 
 template <typename ValueType>
@@ -436,7 +438,7 @@ ValueType PriorityQueue<ValueType>::peek() const {
     if (isEmpty()) {
         error("PriorityQueue::peek: Attempting to peek at an empty queue");
     }
-    return heap.front().value;
+    return _heap.front().value;
 }
 
 template <typename ValueType>
@@ -444,7 +446,7 @@ double PriorityQueue<ValueType>::peekPriority() const {
     if (isEmpty()) {
         error("PriorityQueue::peekPriority: Attempting to peek at an empty queue");
     }
-    return heap.get(0).priority;
+    return _heap.get(0).priority;
 }
 
 template <typename ValueType>
@@ -454,7 +456,7 @@ ValueType PriorityQueue<ValueType>::remove() {
 
 template <typename ValueType>
 int PriorityQueue<ValueType>::size() const {
-    return heap.size();
+    return _heap.size();
 }
 
 template <typename ValueType>
@@ -464,7 +466,7 @@ std::string PriorityQueue<ValueType>::toString() const {
     return os.str();
 }
 
-#ifdef PQUEUE_COMPARISON_OPERATORS_ENABLED
+#ifdef SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
 /*
  * Implementation note: Due to the complexity and unpredictable heap ordering of the elements,
  * this function sadly makes a deep copy of both PQs for comparing.
@@ -504,7 +506,7 @@ int PriorityQueue<ValueType>::pqCompare(const PriorityQueue& pq2) const {
         return 0;
     }
 }
-#endif // PQUEUE_COMPARISON_OPERATORS_ENABLED
+#endif // SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
 
 /*
  * Comparison function for heap entries. The comparison is lexicographic, first by
@@ -531,7 +533,7 @@ bool PriorityQueue<ValueType>::operator !=(const PriorityQueue& pq2) const {
     return !equals(pq2);
 }
 
-#ifdef PQUEUE_COMPARISON_OPERATORS_ENABLED
+#ifdef SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
 template <typename ValueType>
 bool PriorityQueue<ValueType>::operator <(const PriorityQueue& pq2) const {
     return pqCompare(pq2) < 0;
@@ -551,7 +553,7 @@ template <typename ValueType>
 bool PriorityQueue<ValueType>::operator >=(const PriorityQueue& pq2) const {
     return pqCompare(pq2) >= 0;
 }
-#endif // PQUEUE_COMPARISON_OPERATORS_ENABLED
+#endif // SPL_PQUEUE_COMPARISON_OPERATORS_ENABLED
 
 /*
  * Template hash function for priority queues.
@@ -570,24 +572,24 @@ int hashCode(const PriorityQueue<T>& pq) {
     return int(code & hashMask());
 }
 
-#ifdef PQUEUE_ALLOW_HEAP_ACCESS
+#ifdef SPL_PQUEUE_ALLOW_HEAP_ACCESS
 template <typename ValueType>
 const ValueType& PriorityQueue<ValueType>::__getValueFromHeap(int index) const {
-    return heap[index].value;
+    return _heap[index].value;
 }
 
 template <typename ValueType>
 double PriorityQueue<ValueType>::__getPriorityFromHeap(int index) const {
-    return heap[index].priority;
+    return _heap[index].priority;
 }
-#endif // PQUEUE_ALLOW_HEAP_ACCESS
+#endif // SPL_PQUEUE_ALLOW_HEAP_ACCESS
 
 template <typename ValueType>
 std::ostream& operator <<(std::ostream& os,
                           const PriorityQueue<ValueType>& pq) {
     os << "{";
 
-#ifdef PQUEUE_PRINT_IN_HEAP_ORDER
+#ifdef SPL_PQUEUE_PRINT_IN_HEAP_ORDER
     // faster implementation: print in heap order
     // (only downside: doesn't print in 'sorted' priority order,
     //  which might confuse student client)
@@ -595,10 +597,10 @@ std::ostream& operator <<(std::ostream& os,
         if (i > 0) {
             os << ", ";
         }
-        os << pq.heap[i].priority << ":";
-        writeGenericValue(os, pq.heap[i].value, /* forceQuotes */ true);
+        os << pq._heap[i].priority << ":";
+        writeGenericValue(os, pq._heap[i].value, /* forceQuotes */ true);
     }
-#else
+#else // SPL_PQUEUE_PRINT_IN_HEAP_ORDER
     // (default) slow, memory-inefficient implementation: copy pq and print
     PriorityQueue<ValueType> copy = pq;
     for (int i = 0, len = pq.size(); i < len; i++) {
@@ -608,7 +610,7 @@ std::ostream& operator <<(std::ostream& os,
         os << copy.peekPriority() << ":";
         writeGenericValue(os, copy.dequeue(), /* forceQuotes */ true);
     }
-#endif
+#endif // SPL_PQUEUE_PRINT_IN_HEAP_ORDER
     return os << "}";
 }
 

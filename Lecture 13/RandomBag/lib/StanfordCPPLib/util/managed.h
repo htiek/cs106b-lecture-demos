@@ -3,8 +3,17 @@
  * ---------
  * This file defines a template class named Managed that can be used to define
  * classes that perform checks on how their objects are allocated.
+ * This can be used to write, for example, node classes that give better
+ * error messages to the user when double-freed or stack-allocated.
  *
  * @author Marty Stepp
+ * @version 2019/05/13
+ * - better error output; default false for stack/non-new allocation
+ * @version 2019/04/16
+ * - bug fixes for WIN64
+ * @version 2019/04/13
+ * - bug fix for s_freed compiler error
+ * - fixed internal includes
  * @version 2018/12/04
  * - initial version
  */
@@ -14,11 +23,17 @@
 
 #include <cstddef>
 #include <typeinfo>
+#define INTERNAL_INCLUDE 1
 #include "error.h"
+#define INTERNAL_INCLUDE 1
 #include "map.h"
+#define INTERNAL_INCLUDE 1
 #include "memory.h"
+#define INTERNAL_INCLUDE 1
 #include "set.h"
+#define INTERNAL_INCLUDE 1
 #include "strlib.h"
+#undef INTERNAL_INCLUDE
 
 /**
  * The Managed template class can be used to define classes that perform checks
@@ -35,7 +50,7 @@ public:
     void* operator new(size_t n) {
         void* p = ::operator new(n);
         s_allocatedUsingNew().add(p);
-        s_freed().remove(p);
+        s_deleted().remove(p);
         return p;
     }
 
@@ -46,14 +61,14 @@ public:
      */
     void operator delete(void* p) {
         ::operator delete(p);
-        if (s_freed().contains(p)) {
+        if (s_deleted().contains(p)) {
             error("You are trying to delete the same pointer twice: " + pointerToString(p));
         }
 //        if (!s_allocated().contains(p)) {
 //            error("You are trying to delete a pointer that was never allocated: " + pointerToString(p));
 //        }
         s_allocated().remove(p);
-        s_freed().add(p);
+        s_deleted().add(p);
         s_deleteCount()++;
     }
 
@@ -165,28 +180,37 @@ private:
      * @throw ErrorException if object was allocated in an illegal way.
      */
     static void checkAllocation(void* const p) {
-        unsigned long int stackDist, heapDist, staticDist;
+        if (s_allocatedUsingNew().contains(p)) {
+            // this must be a heap/new-allocated pointer; always allowed
+            return;
+        }
+
+        // figure out which region this object was allocated into
+        uintptr_t stackDist, heapDist, staticDist;
         stanfordcpplib::memory::computeMemoryDistances(p, stackDist, heapDist, staticDist);
         if (stackDist < heapDist && stackDist < staticDist) {
+            // closest to stack pointer; probably a stack-allocated object
             if (!s_stackAllowed()) {
-                const std::type_info& type = typeid(T);
-                error(std::string("Stack allocation not allowed for type: ") + type.name()
+                std::string type = typeName();
+                error(std::string("Stack allocation not allowed for type: ") + type
                       + " (must allocate objects of this type using pointers and 'new')");
             }
         } else if (heapDist < stackDist && heapDist < staticDist) {
+            // closest to various heap allocations; probably a heap-allocated object
             if (!s_heapAllowed()) {
-                const std::type_info& type = typeid(T);
-                error(std::string("Heap allocation not allowed for type: ") + type.name()
+                std::string type = typeName();
+                error(std::string("Heap allocation not allowed for type: ") + type
                       + " (must allocate objects of this type on the stack, without pointers or 'new')");
             } else if (!s_heapWithoutNewAllowed() && !s_allocatedUsingNew().contains(p)) {
-                const std::type_info& type = typeid(T);
-                error(std::string("Invalid allocation for type: ") + type.name()
+                std::string type = typeName();
+                error(std::string("Invalid allocation for type: ") + type
                       + " (must allocate objects of this type using pointers and 'new')");
             }
         } else {
+            // closest to static storage; probably a statically-allocated object
             if (!s_staticAllowed()) {
-                const std::type_info& type = typeid(T);
-                error(std::string("Static allocation not allowed for type: ") + type.name()
+                std::string type = typeName();
+                error(std::string("Static/global variable allocation not allowed for type: ") + type
                       + " (must allocate objects of this type using pointers and 'new')");
             }
         }
@@ -253,7 +277,7 @@ private:
      * @private
      */
     static bool& s_heapWithoutNewAllowed() {
-        static bool _s_heapWithoutNewAllowed = true;
+        static bool _s_heapWithoutNewAllowed = false;
         return _s_heapWithoutNewAllowed;
     }
 
@@ -262,7 +286,7 @@ private:
      * @private
      */
     static bool& s_stackAllowed() {
-        static bool _s_stackAllowed = true;
+        static bool _s_stackAllowed = false;
         return _s_stackAllowed;
     }
 
@@ -271,7 +295,7 @@ private:
      * @private
      */
     static bool& s_staticAllowed() {
-        static bool _s_staticAllowed = true;
+        static bool _s_staticAllowed = false;
         return _s_staticAllowed;
     }
 
@@ -291,6 +315,11 @@ private:
 //        if (status == 0 && demangled) {
 //            symname = demangled;
 //        }
+
+        // some type names start with weird chars like underscores or numbers
+        while (!name.empty() && !isalpha(name[0])) {
+            name.erase(0, 1);
+        }
 
         return name;
     }
