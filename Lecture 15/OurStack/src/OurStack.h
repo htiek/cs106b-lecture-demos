@@ -11,11 +11,11 @@ public:
     OurStack();
     ~OurStack();
 
-	  void push(int value);
+    void push(int value);
     int  pop();
     int  peek() const;
-	
-    int size() const;
+
+    int  size() const;
     bool isEmpty() const;
 
 private:
