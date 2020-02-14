@@ -26,15 +26,6 @@ bool OurStack::isEmpty() const {
     return size() == 0;
 }
 
-void OurStack::grow() {
-    allocatedSize *= 2;
-    int* newElems = new int[allocatedSize];
-    for (int i = 0; i < logicalSize; i++) {
-        newElems[i] = elems[i];
-    }
-    delete[] elems;
-    elems = newElems;
-}
 void OurStack::push(int value) {
     if (allocatedSize == logicalSize) {
         grow();
@@ -57,5 +48,16 @@ int OurStack::pop() {
     return result;
 }
 
+void OurStack::grow() {
+    allocatedSize *= 2;
 
+    int* newElems = new int[allocatedSize];
+
+    for (int i = 0; i < logicalSize; i++) {
+        newElems[i] = elems[i];
+    }
+
+    delete[] elems;
+    elems = newElems;
+}
 

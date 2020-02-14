@@ -60,14 +60,16 @@ int main() {
     cout << "  1: Simple tests" << endl;
     cout << "  2: Easy time tests" << endl;
     cout << "  3: Hard time tests" << endl;
-    cout << "  4: Call it a day" << endl;
+    cout << "  4: Very hard time tests" << endl;
+    cout << "  5: Call it a day" << endl;
 
     while (true) {
         int option = getInteger("Your choice: ");
         if (option == 1) runSimpleTests();
         else if (option == 2) runTimeTests(5000, 50000, 5000);
         else if (option == 3) runTimeTests(1000000, 10000000, 1000000);
-        else if (option == 4) break;
+        else if (option == 4) runTimeTests(10000000, 100000000, 10000000);
+        else if (option == 5) break;
         else cerr << "Sorry, I don't understand." << endl;
     }
 

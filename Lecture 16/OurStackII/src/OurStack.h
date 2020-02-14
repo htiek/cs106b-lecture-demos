@@ -15,16 +15,16 @@ public:
     ~OurStack();
 
     void push(int value);
-    int pop();
-    int peek() const;
+    int  pop();
+    int  peek() const;
 
     bool isEmpty() const;
-    int size() const;
+    int  size() const;
 
 private:
-    int  allocatedSize; // How much space is allocated in our array.
-    int  logicalSize;   // How many elements are logically in the array.
     int* elems;         // The actual array of elements.
+    int  allocatedSize; // How much space is allocated in our stack.
+    int  logicalSize;   // How many elements are logically in the stack.
 
     void grow();
 };
