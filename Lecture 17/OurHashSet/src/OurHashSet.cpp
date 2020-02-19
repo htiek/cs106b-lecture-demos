@@ -3,6 +3,7 @@
 using namespace std;
 
 const int kDefaultSize = 1; // Or really anything, really.
+const double kMaxLoadFactor = 2;
 
 OurHashSet::OurHashSet() {
     Vector<Vector<string>> ourBuckets(kDefaultSize);
@@ -25,32 +26,38 @@ bool OurHashSet::contains(const string& value) const {
 }
 
 void OurHashSet::add(const string& value) {
+    /* Don't add duplicate elements. */
+    if (contains(value)) return;
+
     /* Determine the bucket to jump into. */
     int bucket = hashFn(value);
-
-    /* If this element is already present, we don't need to do anything. */
-    for (string elem: buckets[bucket]) {
-        if (elem == value) return;
-    }
-
     buckets[bucket] += value;
-
     numElems++;
-    if (numElems / buckets.size() >= 2) {
+
+    /* If we exceed our load factor cutoff, rehash. */
+    if (numElems >= kMaxLoadFactor * buckets.size()) {
         rehash();
     }
 }
 
+/* Doubles the number of buckets and redistributes elements into those buckets. */
 void OurHashSet::rehash() {
+    /* We need a new set of buckets and a new hash function that can range over
+     * those buckets.
+     */
     Vector<Vector<string>> newBuckets(buckets.size() * 2);
     HashFunction<string> newHashFn(buckets.size() * 2);
 
+    /* Redistribute all old elements into the new buckets using the new
+     * hash function.
+     */
     for (int bucket = 0; bucket < buckets.size(); bucket++) {
         for (string elem: buckets[bucket]) {
             newBuckets[newHashFn(elem)] += elem;
         }
     }
 
+    /* Replace our existing buckets and hash function with these new ones. */
     buckets = newBuckets;
     hashFn  = newHashFn;
 }
