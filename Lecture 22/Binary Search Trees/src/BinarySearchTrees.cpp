@@ -13,9 +13,9 @@ using namespace std;
  * A node in a binary search tree.
  */
 struct Node {
-	string value;
-	Node* left;
-	Node* right;
+    string value;
+    Node* left;
+    Node* right;
 };
 
 /* Returns a BST containing a bunch of California trees. Normally, you wouldn't construct
@@ -105,6 +105,6 @@ int main() {
         }
     }
 
-    /* TODO: Clean up the memory! We'll see how to do this on Monday of next week. */
-	return 0;
+    /* TODO: Clean up the memory! We'll see how to do this on Wednesday. */
+    return 0;
 }
