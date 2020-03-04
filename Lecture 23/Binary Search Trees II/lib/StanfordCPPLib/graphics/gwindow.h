@@ -3,6 +3,11 @@
  * ---------------
  *
  * @author Marty Stepp
+ * @version 2019/05/05
+ * - added static method for isDarkMode checking support
+ * - added static methods to ask for system default widget bg/fg color
+ * @version 2019/04/09
+ * - added toolbar support
  * @version 2018/10/20
  * - added high-density screen features
  * @version 2018/09/09
@@ -267,6 +272,28 @@ public:
                                  const std::string& icon, GEventListenerVoid func);
 
     /**
+     * Adds a new menu item to the given menu.
+     * If the given menu item already exists in this menu, returns it without
+     * adding it again.
+     * You can supply an optional icon to show next to the menu item.
+     * When the menu item is clicked, the given listener function will be called.
+     * @throw ErrorException if the given menu does not exist
+     */
+    virtual QAction* addMenuItem(const std::string& menu, const std::string& item,
+                                 const QIcon& icon, GEventListenerVoid func);
+
+    /**
+     * Adds a new menu item to the given menu.
+     * If the given menu item already exists in this menu, returns it without
+     * adding it again.
+     * You can supply an optional icon to show next to the menu item.
+     * When the menu item is clicked, the given listener function will be called.
+     * @throw ErrorException if the given menu does not exist
+     */
+    virtual QAction* addMenuItem(const std::string& menu, const std::string& item,
+                                 const QPixmap& icon, GEventListenerVoid func);
+
+    /**
      * Adds a new checkbox menu item to the given menu.
      * If the given menu item already exists in this menu, returns it without
      * adding it again.
@@ -328,6 +355,56 @@ public:
     virtual void addToRegion(GInteractor& interactor, const std::string& region = "Center");
 
     /**
+     * Adds a toolbar to this window where action buttons can be placed.
+     */
+    virtual void addToolbar(const std::string& title = "");
+
+    /**
+     * Adds a new item to the window's toolbar.
+     * If the window does not have a toolbar, one is added.
+     * You can supply an optional icon to show next to the menu item.
+     * When the menu item is clicked, an ACTION_MENU action event will occur.
+     */
+    virtual QAction* addToolbarItem(const std::string& item,
+                                    const std::string& icon = "");
+
+    /**
+     * Adds a new item to the window's toolbar.
+     * If the window does not have a toolbar, one is added.
+     * You can supply an optional icon to show next to the menu item.
+     * When the menu item is clicked, the given listener function will be called.
+     */
+    virtual QAction* addToolbarItem(const std::string& item,
+                                    const std::string& icon,
+                                    GEventListenerVoid func);
+
+    /**
+     * Adds a new item to the window's toolbar.
+     * If the window does not have a toolbar, one is added.
+     * You can supply an optional icon to show next to the menu item.
+     * When the menu item is clicked, the given listener function will be called.
+     */
+    virtual QAction* addToolbarItem(const std::string& item,
+                                    const QIcon& icon,
+                                    GEventListenerVoid func);
+
+    /**
+     * Adds a new item to the window's toolbar.
+     * If the window does not have a toolbar, one is added.
+     * You can supply an optional icon to show next to the menu item.
+     * When the menu item is clicked, the given listener function will be called.
+     */
+    virtual QAction* addToolbarItem(const std::string& item,
+                                    const QPixmap& icon,
+                                    GEventListenerVoid func);
+
+    /**
+     * Adds a separator to the window's toolbar.
+     * If the window does not have a toolbar, one is added.
+     */
+    virtual QAction* addToolbarSeparator();
+
+    /**
      * Removes all interactors from all regionss of the window.
      */
     virtual void clear() Q_DECL_OVERRIDE;
@@ -370,9 +447,29 @@ public:
     virtual void clearRegion(const std::string& region);
 
     /**
+     * Removes all items from the window's toolbar, if present.
+     */
+    virtual void clearToolbarItems();
+
+    /**
      * Relocates the window to the exact center of the current screen.
      */
     virtual void center();
+
+    /**
+     * Returns which color to use depending on whether the user's computer is
+     * in light or dark mode.
+     * If in light mode, returns lightColor; else returns darkColor.
+     */
+    static std::string chooseLightDarkModeColor(const std::string& lightColor,
+                                                const std::string& darkColor);
+
+    /**
+     * Returns which color to use depending on whether the user's computer is
+     * in light or dark mode.
+     * If in light mode, returns lightColor; else returns darkColor.
+     */
+    static int chooseLightDarkModeColorInt(int lightColor, int darkColor);
 
     /**
      * Closes the window.
@@ -428,6 +525,38 @@ public:
     virtual CloseOperation getCloseOperation() const;
 
     /**
+     * Returns the default color for backgrounds of interactors as a string.
+     * This is normally a light-grayish color, depending on the user's
+     * system settings.
+     * On some systems that are in "dark mode" this may be a color closer to black.
+     */
+    static std::string getDefaultInteractorBackgroundColor();
+
+    /**
+     * Returns the default color for text on interactors as an RGB integer.
+     * This is normally a light-grayish color, depending on the user's
+     * system settings.
+     * On some systems that are in "dark mode" this may be a color closer to black.
+     */
+    static int getDefaultInteractorBackgroundColorInt();
+
+    /**
+     * Returns the default color for text on interactors as a string.
+     * This is normally black or a nearly-black color, depending on the user's
+     * system settings.
+     * On some systems that are in "dark mode" this may be a color closer to white.
+     */
+    static std::string getDefaultInteractorTextColor();
+
+    /**
+     * Returns the default color for text on interactors as an RGB integer.
+     * This is normally black or a nearly-black color, depending on the user's
+     * system settings.
+     * On some systems that are in "dark mode" this may be a color closer to white.
+     */
+    static int getDefaultInteractorTextColorInt();
+
+    /**
      * Returns the graphical object at the given 0-based index in the window's
      * graphical canvas.
      * @throw ErrorException if the index is out of bounds
@@ -454,13 +583,14 @@ public:
     static QMainWindow* getLastWindow();
 
     /**
-     * Returns the x/y location of the top-left corner of the window on screen.
+     * Returns the x/y location of the top-left corner of the interior of the window on screen,
+     * excluding any onscreen window title bar and frame.
      */
     virtual GPoint getLocation() const;
 
     /**
-     * Returns the total height of the window in pixels, including its title
-     * bar, menus, borders, etc.
+     * Returns the total height of the window in pixels, excluding its title
+     * bar and borders.
      */
     virtual double getHeight() const;
 
@@ -530,8 +660,8 @@ public:
     static double getScreenWidth();
 
     /**
-     * Returns the total width and height of the window in pixels, including
-     * its title bar, menus, borders, etc.
+     * Returns the total width and height of the window in pixels, excluding
+     * its title bar and borders.
      */
     virtual GDimension getSize() const;
 
@@ -551,20 +681,27 @@ public:
     virtual QWidget* getWidget() const;
 
     /**
-     * Returns the total width of the window in pixels, including its title
-     * bar, menus, borders, etc.
+     * Returns the total width of the window in pixels, excluding its title
+     * bar and borders.
      */
     virtual double getWidth() const;
 
     /**
-     * Returns the x location of the left edge of the window on screen.
+     * Returns the x location of the left edge of the interior of the window on screen,
+     * excluding any onscreen window title bar and frame.
      */
     virtual double getX() const;
 
     /**
-     * Returns the y location of the top edge of the window on screen.
+     * Returns the y location of the top edge of the interior of the window on screen,
+     * excluding any onscreen window title bar and frame.
      */
     virtual double getY() const;
+
+    /**
+     * Returns true if this window has a toolbar.
+     */
+    virtual bool hasToolbar() const;
 
     /**
      * Makes the window be not visible on the screen.
@@ -587,6 +724,14 @@ public:
      * canvas area of the window.
      */
     virtual bool inCanvasBounds(double x, double y) const;
+
+    /**
+     * Returns true if the user's computer is in "dark mode."
+     * This is a popular dark color scheme mostly used on recent Macs.
+     * Our checking is imperfect and basically just creates a dummy widget
+     * and checks whether it has bright text and a dark background.
+     */
+    static bool isDarkMode();
 
     /**
      * Returns whether the dots-per-inch of the screen are high enough to
@@ -756,6 +901,11 @@ public:
      * call it when events occur.
      */
     virtual void removeTimerListener();
+
+    /**
+     * Removes the toolbar from this window, if one was present.
+     */
+    virtual void removeToolbar();
 
     /**
      * Removes the window listener from this window so that it will no longer
@@ -1128,6 +1278,7 @@ private:
     CloseOperation _closeOperation;
     Map<std::string, QMenu*> _menuMap;
     Map<std::string, QAction*> _menuActionMap;
+    QToolBar* _toolbar;
 
     friend class GInteractor;
     friend class _Internal_QMainWindow;

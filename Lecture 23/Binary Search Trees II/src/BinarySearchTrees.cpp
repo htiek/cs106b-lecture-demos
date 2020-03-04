@@ -56,14 +56,6 @@ void insertInto(Node*& root, const string& key) {
     } /* else if (key == root->value) // do nothing */
 }
 
-void freeTree(Node* root) {
-    if (root == nullptr) return;
-
-    freeTree(root->left);
-    freeTree(root->right);
-    delete root;
-}
-
 /* Returns a BST containing a bunch of California trees. Normally, you wouldn't construct
  * a BST this way; this is just here for the lecture demo.
  */
@@ -99,13 +91,50 @@ Node* makeTreeTree() {
     };
 }
 
+/* Deletes all the nodes in a tree. This approach uses a postorder traversal;
+ * we delete the children before deleting the node itself.
+ */
+void deleteTree(Node* root) {
+    if (root == nullptr) return;
+
+    deleteTree(root->left);
+    deleteTree(root->right);
+    delete root;
+}
+
+/* Finds all elements in the tree within a given range, printing them in
+ * sorted order.
+ */
+void printInRange(Node* root, const string& low, const string& high) {
+    /* Empty trees don't have anything in any range. */
+    if (root == nullptr) return;
+
+    /* If the range is purely to the left, just look there. */
+    if (high < root->value) {
+        printInRange(root->left, low, high);
+    }
+    /* If the range is purely to the right, just look there. */
+    else if (root->value < low) {
+        printInRange(root->right, low, high);
+    }
+    /* Otherwise, we're in the range, and so we need to print ourselves.
+     * But there might also be other matches, and we'll need to find those
+     * as well!
+     */
+    else {
+        printInRange(root->left, low, high);
+        cout << root->value << endl;
+        printInRange(root->right, low, high);
+    }
+}
+
 int main() {
     Node* root = makeTreeTree();
 
     insertInto(root, "Joshua Tree");
     insertInto(root, "Ponderosa Pine");
 
-    printTree(root);
-    freeTree(root);
+    printInRange(root, "C", "J");
+    deleteTree(root);
     return 0;
 }
