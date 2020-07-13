@@ -52,14 +52,15 @@ Queue<SoundClip> loadLoop(const string& filename) {
 int main() {
     /* We've bundled the following sample clips:
      *
-     * RowYourBoat.loop: The children's song "Row Your Boat"
+     * BadGuy.loop:      The baseline to Billie Eilish's "Bad Guy"
      * FirstCircle.loop: The intro to "The First Circle" by Pat Metheny Group
-     * Solfegietto.loop: The first bars of "Solfegietto in C Minor" by C.P.E. Bach
+     * Gnossienne4.loop: A section of "Gnossienne 4" by Erik Satie
      * Money.loop:       The bass line from "Money" by Pink Floyd
      * Pentatonic.loop:  A rising and falling pentatonic scale
-     * Gnossienne4.loop: A section of "Gnossienne 4" by Erik Satie
+     * RowYourBoat.loop: The children's song "Row Your Boat"
+     * Solfegietto.loop: The first bars of "Solfegietto in C Minor" by C.P.E. Bach
      */
-    Queue<SoundClip> loop = loadLoop("RowYourBoat.loop");
+    Queue<SoundClip> loop = loadLoop("BadGuy.loop");
 
     while (true) {
         /* Play the clip that's been waiting the longest. */
