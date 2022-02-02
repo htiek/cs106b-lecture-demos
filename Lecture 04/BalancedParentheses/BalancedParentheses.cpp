@@ -17,11 +17,11 @@ bool isOpenParenthesis(char ch);
 bool isCloseParenthesis(char ch);
 bool parensMatch(char open, char close);
 
-/* Given a string, are the parentheses balanced within
+/* Given a string, are the parentheses balanced in
  * that string? The parameter is accepted by const
  * reference because (1) we don't want to copy the
- * text (that's wasteful), and (2) we don't want this
- * function to make changes to it.
+ * text (that's wasteful), and (2) we don't want
+ * this function to make changes to it.
  */
 bool parensAreBalancedIn(const string& text) {
     Stack<char> unmatchedOpens;
@@ -30,7 +30,9 @@ bool parensAreBalancedIn(const string& text) {
         if (isOpenParenthesis(ch)) {
             unmatchedOpens.push(ch);
         } else if (isCloseParenthesis(ch)) {
-            /* This should match the top of the stack. */
+            /* If the stack is empty, then we
+             * have an imbalance.
+             */
             if (unmatchedOpens.isEmpty()) {
                 return false;
             }

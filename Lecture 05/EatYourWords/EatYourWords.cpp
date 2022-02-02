@@ -49,38 +49,64 @@ string sortedVersionOf(const string& input) {
     return result;
 }
 
+
+
 bool isTautonym(const string& word) {
+    /* Tautonyms all have even length. */
     if (word.length() % 2 != 0) {
         return false;
     }
 
+    /* Is the first half of the word the same as
+     * the second half?
+     */
     int half = word.length() / 2;
+
+    /*    DE ER
+     *    ^^ ^^
+     */
     return word.substr(0, half) == word.substr(half);
 }
 
 int main() {
+
+    Map<string, int> freqMap;
+    while (true) {
+        string text = getLine("Enter some text: ");
+        freqMap[text]++;
+        cout << "Times seen: " << freqMap[text] << endl;
+    }
+
+
+
+
+    /*
     Lexicon english("EnglishWords.txt");
 
-    // senator -> aeonrst
-    // atoners -> aeonrst
-    // treason -> aeonrst
-
-    // senator -> aeonrst
-
-    Map<string, Lexicon> clusters;
+    // 'a' -> {'apple', 'appendix', 'apply', 'aeon', 'aether', ...
+    // 'b' -> {'ball', 'balloon', 'baluga', ...
+    Map<char, Lexicon> wordsByFirstLetter;
     for (string word: english) {
-        clusters[sortedVersionOf(word)].add(word);
+        wordsByFirstLetter[word[0]] += word;
     }
 
-    while (true) {
-        string word = toLowerCase(getLine("Enter a word: "));
-        string key = sortedVersionOf(word);
-        if (clusters.containsKey(key)) {
-            cout << clusters[key] << endl;
-        } else {
-            cout << ":-(" << endl;
-        }
-    }
-
+    cout << wordsByFirstLetter['q'] << endl;
+    */
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

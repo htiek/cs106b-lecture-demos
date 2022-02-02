@@ -8,17 +8,18 @@
 #include "console.h"
 using namespace std;
 
-/* By itself, this has no effect. Change the parameter to a reference
- * parameter to make the magic happen.
+/* By itself, this has no effect. Change the
+ * parameter to a reference parameter to make
+ * the magic happen.
  */
-void becomeWealthy(int netWorth) {
+void becomeWealthy(int& netWorth) {
     netWorth = 1000000000;
 }
 
 int main() {
-    int value = 137;
-    becomeWealthy(value);
-    cout << value << endl; // <-- Here
+    int netWorth = 137;
+    becomeWealthy(netWorth);
+    cout << netWorth << endl; // <-- Here
     return 0;
 }
 

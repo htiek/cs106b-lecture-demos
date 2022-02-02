@@ -1,0 +1,3 @@
+[submodule "Lecture 11/Algorithm Timing/GUI"]
+	path = Lecture 11/Algorithm Timing/GUI
+	url = https://github.com/cs106bx/MiniGUI

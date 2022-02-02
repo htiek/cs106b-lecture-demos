@@ -42,7 +42,7 @@ void displayOptions(const Vector<string>& options) {
  */
 string chooseMusicFile() {
     Vector<string> options = musicFileOptions();
-    displayOptions(musicFileOptions());
+    displayOptions(options);
 
     while (true) {
         int choice = getInteger("Your choice: ");
