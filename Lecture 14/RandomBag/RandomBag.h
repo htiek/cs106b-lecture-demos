@@ -12,9 +12,6 @@ public:
     void add(int value);
     int  removeRandom();
 
-    int  size() const;
-    bool isEmpty() const;
-
 private:
     Vector<int> elems;
 };

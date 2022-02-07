@@ -3,10 +3,6 @@
 #include "RandomBag.h"
 using namespace std;
 
-void printBagSize(const RandomBag& bag) {
-    cout << "The bag has " << bag.size() << " elements in it." << endl;
-}
-
 int main() {
     /* Some sample code using the RandomBag. */
     RandomBag bag;
@@ -15,9 +11,7 @@ int main() {
         bag.add(i);
     }
 
-    printBagSize(bag);
-
-    while (!bag.isEmpty()) {
+    for (int i = 0; i < 10; i++) {
         cout << bag.removeRandom() << " ";
     }
 
