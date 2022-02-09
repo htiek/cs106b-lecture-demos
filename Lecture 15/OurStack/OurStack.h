@@ -7,11 +7,7 @@
 
 class OurStack {
 public:
-    OurStack();
-    ~OurStack();
-
     void push(int value);
-
     int  pop();        // Remove and return the top element of the stack.
     int  peek() const; // Look at - but don't remove - the top of the stack.
 
