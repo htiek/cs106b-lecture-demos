@@ -24,7 +24,5 @@ private:
     int* elems;         // The actual array of elements.
     int  allocatedSize; // How much space is allocated in our stack.
     int  logicalSize;   // How many elements are logically in the stack.
-
-    void grow();
 };
 

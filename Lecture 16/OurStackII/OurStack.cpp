@@ -27,14 +27,18 @@ bool OurStack::isEmpty() const {
 }
 
 void OurStack::push(int value) {
+    /* Out of space? */
     if (allocatedSize == logicalSize) {
-        grow();
+        error("The digital fire marshal would object.");
     }
+
+    /* Add the element. */
     elems[logicalSize] = value;
     logicalSize++;
 }
 
 int OurStack::peek() const {
+    /* Nothing here? */
     if (isEmpty()) {
         error("What is the sound of one hand clapping?");
     }
@@ -47,19 +51,6 @@ int OurStack::pop() {
     logicalSize--;
     return result;
 }
-
-void OurStack::grow() {
-    allocatedSize *= 2; // TODO: Revisit this decision
-    int* helper = new int[allocatedSize];
-
-    for (int i = 0; i < logicalSize; i++) {
-        helper[i] = elems[i];
-    }
-
-    delete[] elems;
-    elems = helper;
-}
-
 
 
 
