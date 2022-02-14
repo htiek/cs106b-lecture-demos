@@ -33,7 +33,7 @@ namespace hashfunction_detail {
     }
 
     std::function<int(int)> tabulationHashFunction(int seed) {
-        auto table = tabulationTable(seed == -1? random32Bits() : std::uint32_t(seed));
+        auto table = tabulationTable(std::uint32_t(seed));
         return [table] (std::uint32_t key) {
             std::uint32_t result = 0;
             for (size_t i = 0; i < 4; i++) {

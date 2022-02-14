@@ -12,12 +12,11 @@ public:
      * Constructs a new HashFunction for the given number of slots. Each hash
      * function constructed this way will be initialized randomly.
      *
-     * The second argument is a random seed. If it's set to a value other than
-     * -1, that value will be used as a random seed. Setting this value is
-     * useful if you'd like to have your hash function behave consistently
-     * across runs of the program.
+     * The second argument is a random seed. That value will be used as a random
+     * seed. Setting this value is useful if you'd like to have your hash function
+     * behave consistently across runs of the program.
      */
-    explicit HashFunction(int numSlots, int randomSeed = -1);
+    explicit HashFunction(int numSlots, int randomSeed = 0);
 
     /**
      * Constructs a new HashFunction. This HashFunction cannot be used bceause

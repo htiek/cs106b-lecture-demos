@@ -25,7 +25,5 @@ private:
 
     /* Total number of elements, different from number of buckets. */
     int numElems;
-
-    void rehash();
 };
 
