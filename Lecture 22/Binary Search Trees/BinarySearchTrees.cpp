@@ -53,43 +53,15 @@ Node* makeTreeTree() {
     };
 }
 
-bool contains(Node* tree, const string& value) {
-    if (tree == nullptr) return false;
-
-    if (value == tree->value) {
-        return true;
-    } else if (value < tree->value) {
-        return contains(tree->left, value);
-    } else /* (value > tree->value) */  {
-        return contains(tree->right, value);
-    }
-}
-
-void printTree(Node* tree) {
-    if (tree == nullptr) return;
-
-    printTree(tree->left);        // Line 1
-    cout << tree->value << endl;
-    printTree(tree->right);       // Line 2
-}
-
-void insertInto(Node*& tree, const string& value) {
-    if (tree == nullptr) {
-        Node* node = new Node;
-        node->value = value;
-        node->left  = nullptr;
-        node->right = nullptr;
-        tree = node;
-    } else if (value < tree->value) {
-        insertInto(tree->left, value);
-    } else if (value > tree->value) {
-        insertInto(tree->right, value);
-    } /* else (value == tree->value) do nothing; */
+bool contains(Node* root, const string& key) {
+    /* TODO: This is a very pessimistic function that
+     * always returns false. Improve upon this.
+     */
+    return false;
 }
 
 int main() {
     Node* root = makeTreeTree();
-    printTree(root);
 
     while (true) {
         string name = getLine("Enter tree: ");
@@ -97,10 +69,8 @@ int main() {
             cout << "Tree-mendous!" << endl;
         } else {
             cout << "If at first you don't succeed, tree, tree again!" << endl;
-            insertInto(root, name);
         }
     }
 
-    /* TODO: Clean up the memory! We'll see how to do this on Monday. */
-    return 0;
+    /* TODO: Clean up the memory! We'll see how to do this on Wednesday. */
 }
