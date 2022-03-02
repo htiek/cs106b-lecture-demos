@@ -43,7 +43,8 @@ void printBetween(Node* root, const string& low, const string& high) {
     }
 }
 
-void printTree(Node* root) {
+/* Prints out the full contents of a BST in sorted order. */
+void printContentsOf(Node* root) {
     /* Base case: Empty tree has nothing to print. */
     if (root == nullptr) return;
 
@@ -53,11 +54,12 @@ void printTree(Node* root) {
      *   2. then print our value,
      *   3. then print the larger values in sorted order.
      */
-    printTree(root->left);
+    printContentsOf(root->left);
     cout << root->value << endl;
-    printTree(root->right);
+    printContentsOf(root->right);
 }
 
+/* Frees all memory used by the given BST. */
 void deleteTree(Node* root) {
     if (root == nullptr) return;
 
