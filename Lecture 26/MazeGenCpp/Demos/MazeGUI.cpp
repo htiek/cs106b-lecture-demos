@@ -84,6 +84,16 @@ Grid<Cell> initialMazeOfSize(int numRows, int numCols) {
     return result;
 }
 
+/* Shuffles the contents of a Vector. This uses an algorithm called the Fisher-Yates
+ * shuffle.
+ */
+void shuffle(Vector<GridLocation>& elems) {
+    for (int i = 0; i < elems.size(); i++) {
+        int j = randomInteger(i, elems.size() - 1);
+        swap(elems[i], elems[j]);
+    }
+}
+
 /* Runs the DFS maze generation algorithm from the starting location, updating the
  * maze and the DFS state as it goes.
  *
@@ -111,7 +121,7 @@ void dfsFrom(int row, int col, Grid<Cell>& maze, Grid<DFSState>& cellStates, Rep
         {  0, +1 },
         {  0, -1 }
     };
-    deltas.shuffle();
+    shuffle(deltas);
 
     /* Visit all neighbors. */
     for (GridLocation delta: deltas) {
@@ -275,7 +285,7 @@ private:
 
 const int kNumRows = 10;
 const int kNumCols = 10;
-const double kPauseTime = 200;
+const double kPauseTime = 50;
 
 MazeGUI::MazeGUI(GWindow& window) : ProblemHandler(window) {
     // Nothing to do
@@ -293,6 +303,7 @@ void MazeGUI::settingUp() {
     };
 
     makeKruskalMaze(kNumRows, kNumCols, reporter);
+    //makeDFSMaze(kNumRows, kNumCols, reporter);
 }
 
 struct Geometry {
