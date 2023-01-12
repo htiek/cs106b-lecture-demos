@@ -18,27 +18,22 @@ int main() {
     return 0;
 }
 
-/* Returns the sum of the digits of the number n. */
+/* Given an integer n, returns the sum of the digits of the
+ * number n.
+ */
 int sumOfDigitsOf(int n) {
+    /* Sum of the digits we've seen thus far. */
     int result = 0;
 
-    /* Given an integer n, the value n % 10 represents the last
-     * digit of the number (the REMAINDER when we divide n by 10).
-     * The value n / 10 represents all the digits except the last
-     * (the QUOTIENT when we divide n by 10.)
-     */
     while (n > 0) {
+        /* Add the last digit of n. */
         result += (n % 10);
+
+        /* Drop off the last digit of n. */
         n /= 10;
     }
-
     return result;
 }
-
-
-
-
-
 
 
 
