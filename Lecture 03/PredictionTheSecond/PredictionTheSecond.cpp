@@ -4,12 +4,11 @@
  */
 #include <iostream>
 #include <string>
-#include "vector.h"
 #include "console.h"
 using namespace std;
 
 void gollyGee(const string& text) {
-    text[0] = 'g';
+    cout << text.length() << endl;
 }
 
 int main() {

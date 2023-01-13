@@ -9,23 +9,11 @@
 using namespace std;
 
 int sumOfDigitsOf(int n);
-int digitalRootOf(int n);
 
 int main() {
     while (true) {
         int val = getInteger("For this trick, I need a number! ");
-        cout << "Its digital root is " << digitalRootOf(val) << "." << endl << endl;
-    }
-}
-
-int digitalRootOf(int n) {
-    /* Base case: Single-digit number. */
-    if (n < 10) {
-        return n;
-    }
-    /* Recursive case: Multiple digits. */
-    else {
-        return digitalRootOf(sumOfDigitsOf(n));
+        cout << "Its digit sum is " << sumOfDigitsOf(n) << endl;
     }
 }
 
