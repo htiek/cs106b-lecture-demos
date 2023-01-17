@@ -17,25 +17,20 @@ int main() {
     }
 }
 
-/* Given a string, returns the reverse of that string. */
 string reverseOf(string input) {
-    /* Base Case: If the string is empty, then it's its own reverse. */
+    /* Base Case: The reverse of the empty string is the empty
+     * string itself.
+     */
     if (input == "") {
         return "";
     }
-    /* Recursive Case: Reverse everything but the first character, then tack
-     * the first character onto the back.
+    /* Recursive Case: To reverse a longer string, move the first
+     * character to the back, then reverse what remains.
      */
     else {
         return reverseOf(input.substr(1)) + input[0];
     }
 }
-
-
-
-
-
-
 
 
 

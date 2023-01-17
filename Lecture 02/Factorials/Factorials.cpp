@@ -21,7 +21,7 @@ int factorial(int n) {
     if (n == 0) {
         return 1;
     }
-    /* Recursive Case: n! = n * (n - 1)! */
+    /* Recursive Case: n! = n * (n - 1)!. */
     else {
         return n * factorial(n - 1);
     }

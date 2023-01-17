@@ -13,21 +13,28 @@ int sumOfDigitsOf(int n);
 int main() {
     while (true) {
         int val = getInteger("For this trick, I need a number! ");
-        cout << "Its digit sum is " << sumOfDigitsOf(n) << endl;
+        cout << "Its digit sum is " << sumOfDigitsOf(val) << "." << endl << endl;
     }
 }
 
-/* Given a number n, returns the sum of the digits of n. */
+
 int sumOfDigitsOf(int n) {
-    /* Base case: The sum of all the digits of a number
-     * with just one digit is that digit itself.
-     */
+    /* Base Case: Any one-digit number sums to itself. */
     if (n < 10) {
         return n;
     }
-    /* Recursive step: Peel off the last digit. */
+    /* Recursive Case: To add up the digits of a multi-
+     * digit number, add up all but the last digit, then
+     * add in the last digit.
+     */
     else {
         return sumOfDigitsOf(n / 10) + (n % 10);
     }
 }
+
+
+
+
+
+
 
