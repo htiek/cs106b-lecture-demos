@@ -25,7 +25,7 @@ void playSound(const string& filename, double ms) {
     if (fork() == 0) {
         vector<char*> args;
         string file = "sounds/" + filename;
-        args.push_back("/usr/local/bin/play");
+        args.push_back(strdup("/usr/local/bin/play"));
         args.push_back(strdup(file.c_str()));
         args.push_back(nullptr);
 

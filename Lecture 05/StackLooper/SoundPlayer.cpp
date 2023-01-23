@@ -1,25 +1,47 @@
 #include "SoundPlayer.h"
-//#include "qsound.h"
 #include "gthread.h"
 #include <iostream>
 #include <iomanip>
+#include <unistd.h>
+#include <chrono>
+#include <mutex>
 using namespace std;
 
 const int kFilenameWidth = 20;
 
-void playSound(const string& filename, double ms) {
-    cout << setw(kFilenameWidth) << filename << " (" << ms << "ms)" << endl;
+static mutex theCoutLock;
 
-    /* Launch a thread in the background to play the sound. We
-     * detach it so that it can continue to run and execute
-     * even after the thread object we created here ceases
-     * to exist.
-     */
-    thread mThread([filename] {
-        ostringstream command;
-        command << "./PlaySound.sh " << filename;
-        system(command.str().c_str());
+void playSound(const string& filename, double ms) {
+    auto startTime = chrono::high_resolution_clock::now();
+
+    /* Printing things is slow on macOS, so do that in a thread. */
+    thread printer([=] {
+        lock_guard<mutex> locker(theCoutLock);
+        cout << setw(kFilenameWidth) << filename << " (" << ms << "ms)" << endl;
     });
-    mThread.detach();
-    GThread::getCurrentThread()->sleep(ms);
+    printer.detach();
+
+    /* Fire off the sound player as a separate process. */
+    if (fork() == 0) {
+        vector<char*> args;
+        string file = "sounds/" + filename;
+        args.push_back(strdup("/usr/local/bin/play"));
+        args.push_back(strdup(file.c_str()));
+        args.push_back(nullptr);
+
+        /* Close stderr and stdout so we don't clog up the
+         * display.
+         */
+        close(1);
+        close(2);
+
+        /* Launch! */
+        execvp("/usr/local/bin/play", args.data());
+    }
+
+    /* Delay for the appropriate amount of time. */
+    double delay = ms - chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - startTime).count();
+    if (delay > 0) {
+        GThread::getCurrentThread()->sleep(delay);
+    }
 }
