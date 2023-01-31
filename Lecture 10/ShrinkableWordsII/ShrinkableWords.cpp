@@ -4,13 +4,11 @@
 #include "lexicon.h"
 #include "console.h"
 #include "simpio.h"
-#include "stack.h"
+#include "optional.h"
 using namespace std;
 
-const Vector<Stack<string>> Nothing = {};
-
-Vector<Stack<string>> isShrinkable(const string& word,
-                                   const Lexicon& english) {
+Optional<Vector<string>> isShrinkable(const string& word,
+                                      const Lexicon& english) {
     /* Base Case: Non-words aren't shrinkable words. */
     if (!english.contains(word)) {
         return Nothing;
@@ -18,7 +16,7 @@ Vector<Stack<string>> isShrinkable(const string& word,
 
     /* Base Case: Any word of length 1 is shrinkable. */
     if (word.length() == 1) {
-        return { { word } };
+        return { word };
     }
 
     /* Recursive step: look at all words you can
@@ -31,7 +29,7 @@ Vector<Stack<string>> isShrinkable(const string& word,
                           word.substr(i+1);
         auto result = isShrinkable(shrunken, english);
         if (result != Nothing) {
-            result[0].push(word);
+            result.value() += word;
             return result;
         }
     }
@@ -50,8 +48,8 @@ int main() {
         auto sequence = isShrinkable(word, english);
         if (sequence != Nothing) {
             cout << "It's shrinkable!" << endl;
-            while (!sequence[0].isEmpty()) {
-                cout << sequence[0].pop() << endl;
+            for (string step: sequence.value()) {
+                cout << step << endl;
             }
         } else {
             cout << "Nothing to see here, folks; move along." << endl;
