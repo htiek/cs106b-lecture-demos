@@ -4,20 +4,21 @@
 #include "lexicon.h"
 #include "console.h"
 #include "simpio.h"
+#include "stack.h"
 using namespace std;
 
-bool isShrinkable(const string& word,
-                  const Lexicon& english,
-                  Vector<string>& shrinkingSequence) {
+const Vector<Stack<string>> Nothing = {};
+
+Vector<Stack<string>> isShrinkable(const string& word,
+                                   const Lexicon& english) {
     /* Base Case: Non-words aren't shrinkable words. */
     if (!english.contains(word)) {
-        return false;
+        return Nothing;
     }
 
     /* Base Case: Any word of length 1 is shrinkable. */
     if (word.length() == 1) {
-        shrinkingSequence = { word };
-        return true;
+        return { { word } };
     }
 
     /* Recursive step: look at all words you can
@@ -28,17 +29,17 @@ bool isShrinkable(const string& word,
     for (int i = 0; i < word.length(); i++) {
         string shrunken = word.substr(0, i) +
                           word.substr(i+1);
-        if (isShrinkable(shrunken, english,
-                         shrinkingSequence)) {
-            shrinkingSequence += word;
-            return true;
+        auto result = isShrinkable(shrunken, english);
+        if (result != Nothing) {
+            result[0].push(word);
+            return result;
         }
     }
 
     /* If none of those options worked, this string
      * cannot be shrunk.
      */
-    return false;
+    return Nothing;
 }
 
 int main() {
@@ -46,11 +47,11 @@ int main() {
     while (true) {
         string word = getLine("Enter a word: ");
 
-        Vector<string> sequence;
-        if (isShrinkable(word, english, sequence)) {
+        auto sequence = isShrinkable(word, english);
+        if (sequence != Nothing) {
             cout << "It's shrinkable!" << endl;
-            for (string step: sequence) {
-                cout << step << endl;
+            while (!sequence[0].isEmpty()) {
+                cout << sequence[0].pop() << endl;
             }
         } else {
             cout << "Nothing to see here, folks; move along." << endl;
