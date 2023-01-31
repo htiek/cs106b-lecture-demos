@@ -5,6 +5,7 @@
 #include "lexicon.h"
 #include "simpio.h"
 #include "console.h"
+#include "optional.h"
 using namespace std;
 
 /* All the elements. */
@@ -35,28 +36,28 @@ const Set<string> kAllElements = {
     "Lv", "Ts", "Og"
 };
 
-Vector<string> isElementSpellable(const string& word) {
+Optional<string> isElementSpellable(const string& word) {
     if (word == "") {
-        return { "" };
+        return "";
     }
     for (string element: kAllElements) {
         if (startsWith(toLowerCase(word), toLowerCase(element))) {
-            Vector<string> result = isElementSpellable(word.substr(element.length()));
-            if (!result.isEmpty()) {
-                return { element + result[0] };
+            Optional<string> result = isElementSpellable(word.substr(element.length()));
+            if (result != Nothing) {
+                return element + result.value();
             }
         }
     }
-    return { };
+    return Nothing;
 }
 
 int main() {
     Lexicon english("EnglishWords.txt");
     for (string word: english) {
         if (word.length() >= 15) {
-            Vector<string> result = isElementSpellable(word);
-            if (!result.isEmpty()) {
-                cout << result[0] << endl;
+            Optional<string> result = isElementSpellable(word);
+            if (result != Nothing) {
+                cout << result << endl;
             }
         }
     }
