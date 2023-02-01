@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <ostream>
 #include <algorithm>
+#include <memory>
 #include "collections.h"
 
 /* Allows for overloading on Nothing. */
