@@ -94,7 +94,7 @@ Timing::TimeTest makeAverageOfTest() {
             (void) averageOf(values);
             timer.stop();
         },
-        Timing::linRange(10000000, 100000000, 5000000),
+        Timing::linRange(10000000, 50000000, 5000000),
         { 1 },
         "averageOf"
     };
@@ -112,7 +112,7 @@ Timing::TimeTest makePandoTest() {
 
             cout.rdbuf(oldBuf);
         },
-        Timing::linRange(1000000, 10000000, 500000),
+        Timing::linRange(1000000, 5000000, 500000),
         { 1 },
         "pando"
     };
@@ -130,7 +130,7 @@ Timing::TimeTest makePrintStarsTest() {
 
             cout.rdbuf(oldBuf);
         },
-        Timing::linRange(1000, 10000, 500),
+        Timing::linRange(1000, 5000, 500),
         { 1 },
         "printStars"
     };
@@ -148,7 +148,7 @@ Timing::TimeTest makeBeniTest() {
 
             cout.rdbuf(oldBuf);
         },
-        Timing::linRange(100, 1000, 50),
+        Timing::linRange(500, 2500, 250),
         { 1 },
         "beni"
     };
