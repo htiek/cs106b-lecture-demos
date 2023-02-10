@@ -1,7 +1,4 @@
-#include "TemporaryComponent.h"
-#include "ProblemHandler.h"
-#include "GColorConsole.h"
-#include "GUIUtils.h"
+#include "GUI/MiniGUI.h"
 #include "TimedFunctions.h"
 #include "ginteractors.h"
 #include "gtimer.h"
@@ -12,6 +9,7 @@
 #include <cmath>
 #include <iomanip>
 using namespace std;
+using namespace MiniGUI;
 
 namespace Timing {
     /* Generates numbers in linear and exponential sequences */
@@ -39,22 +37,22 @@ namespace {
     const double kPadding = 20;
 
     /* Axis constants. */
-    const string kAxisColor = "#555555"; // Davy's gray
-    const string kAxisFont  = "Serif-8";
+    const char kAxisColor[] = "#555555"; // Davy's gray
+    const MiniGUI::Font kAxisFont(FontFamily::SERIF, FontStyle::NORMAL, 8, kAxisColor);
+
     const size_t kMaxAxisLabels = 10;    // Max number of major tick marks on the X axis
 
     /* Content areas. */
-    const double kHeaderHeight    = 50;
-    const string kHeaderFont      = "Serif-BOLDITALIC-24";
-    const string kHeaderFontColor = kAxisColor;
+    const MiniGUI::Font kHeaderFont(FontFamily::SERIF, FontStyle::BOLD_ITALIC, 50, kAxisColor);
+    const double kHeaderHeight = 50;
 
     /* Legend area, expressed as an offset from the start of the chart area. */
     const double kLegendXOffset   = 100;
     const double kLegendYOffset   =   0;
     const double kLegendWidth     = 150;
     const double kLegendHeight    = 200;
-    const string kLegendFont      = "SansSerif-12";
-    const string kLegendFontColor = kAxisColor;
+
+    const MiniGUI::Font kLegendFont(FontFamily::SANS_SERIF, FontStyle::NORMAL, 12, kAxisColor);
 
     /* Colors to use for various values of k. */
     const vector<string> kLineColors = {
@@ -76,11 +74,9 @@ namespace {
         void actionPerformed(GObservable* source) override;
 
     protected:
-        void repaint(GWindow& window) override;
+        void repaint() override;
 
     private:
-        GWindow& mWindow;
-
         /* Each timer tick steps us through the next test case. */
         GTimer timer{kEventTimerSpeed};
 
@@ -108,12 +104,14 @@ namespace {
         void drawLegend(GWindow& window, const GRectangle& bounds);
     };
 
-    PerformanceGUI::PerformanceGUI(GWindow& window) : mWindow(window) {
+    PerformanceGUI::PerformanceGUI(GWindow& window) : ProblemHandler(window) {
         mInput   = Temporary<GTextField>(new GTextField(""), window, "SOUTH");
         mConsole = Temporary<GColorConsole>(new GColorConsole(), window, "WEST");
 
         mConsole->setWidth(window.getCanvasWidth() / 2);
         mConsole->setHeight(window.getCanvasHeight());
+
+        mConsole->setStyle("black", GColorConsole::NORMAL, FontSize(24));
     }
 
     void PerformanceGUI::stepTests() {
@@ -241,7 +239,7 @@ namespace {
             if (option) {
                 startTests(option->constructor());
             } else if (command == "resize") {
-                mConsole->setWidth(mWindow.getCanvasWidth() / 2);
+                mConsole->setWidth(window().getCanvasWidth() / 2);
             } else if (command == "clear") {
                 mConsole->clearDisplay();
                 mConsole->flush();
@@ -251,13 +249,13 @@ namespace {
         }
     }
 
-    void PerformanceGUI::repaint(GWindow& window) {
-        clearDisplay(window, kBackgroundColor);
+    void PerformanceGUI::repaint() {
+        clearDisplay(window(), kBackgroundColor);
 
         /* Space for the header. */
         GRectangle header = {
             kPadding, kPadding,
-            window.getCanvasWidth() - 2 * kPadding,
+            window().getCanvasWidth() - 2 * kPadding,
             kHeaderHeight
         };
 
@@ -266,8 +264,8 @@ namespace {
         /* Set up the chart. */
         GRectangle chart = {
             kPadding, chartTop,
-            window.getCanvasWidth()  - 2 * kPadding,
-            window.getCanvasHeight() - chartTop - kPadding
+            window().getCanvasWidth()  - 2 * kPadding,
+            window().getCanvasHeight() - chartTop - kPadding
         };
 
         /* And the legend. */
@@ -276,20 +274,15 @@ namespace {
             kLegendWidth, kLegendHeight
         };
 
-        drawHeader(window, header);
-        drawChart (window, chart);
-        drawLegend(window, legend);
+        drawHeader(window(), header);
+        drawChart (window(), chart);
+        drawLegend(window(), legend);
     }
 
     void PerformanceGUI::drawHeader(GWindow& window, const GRectangle& bounds) {
-        GText label(currTest.name);
-        label.setFont(kHeaderFont);
-        label.setColor(kHeaderFontColor);
-
-        label.setLocation(bounds.x + (bounds.width - label.getWidth()) / 2.0,
-                          bounds.y + (bounds.height - label.getHeight()) / 2.0 + label.getFontAscent());
-
-        window.draw(&label);
+        auto render = TextRender::construct(currTest.name, bounds, kHeaderFont);
+        render->alignCenterHorizontally();
+        render->draw(window);
     }
 
     void PerformanceGUI::drawChart(GWindow& window, const GRectangle& bounds) {
@@ -338,7 +331,7 @@ namespace {
         }
 
         /* Set up the legend. Don't draw it yet; we need to clear the area behind it. */
-        auto legend = LegendRender::construct(labels, kLineColors, bounds, kLegendFontColor, kLegendFont, kLegendFontColor);
+        auto legend = LegendRender::construct(labels, kLineColors, bounds, { kLegendFont.color() }, kLegendFont, kLegendFont.color());
         window.setColor(kBackgroundColor);
         window.fillRect(legend->bounds());
 
@@ -347,6 +340,6 @@ namespace {
     }
 }
 
-shared_ptr<ProblemHandler> makePerformanceGUI(GWindow& window) {
+GRAPHICS_HANDLER("Performance", GWindow& window) {
     return make_shared<PerformanceGUI>(window);
 }

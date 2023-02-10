@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <random>
 using namespace std;
 
 using Container = vector<int>;
@@ -140,8 +141,11 @@ Container descendingOrderSequence(int length) {
     return result;
 }
 Container randomOrderSequence(int length) {
+    static random_device rd;
+    static mt19937 generator;
+
     auto result = ascendingOrderSequence(length);
-    random_shuffle(result.begin(), result.end());
+    shuffle(result.begin(), result.end(), generator);
     return result;
 }
 

@@ -1,3 +1,6 @@
 [submodule "Lecture 11/Algorithm Timing/GUI"]
 	path = Lecture 11/Algorithm Timing/GUI
 	url = https://github.com/cs106bx/MiniGUI
+[submodule "Lecture 12/SortTiming/GUI"]
+	path = Lecture 12/SortTiming/GUI
+	url = https://github.com/cs106bx/MiniGUI
