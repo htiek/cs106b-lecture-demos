@@ -2,8 +2,6 @@
 #include "console.h"
 using namespace std;
 
-void cheer(int numTimes);
-
 /* This is where things begin! */
 int main() {
     cheer(3);
