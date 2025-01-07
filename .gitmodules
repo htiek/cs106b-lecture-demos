@@ -4,3 +4,15 @@
 [submodule "Lecture 12/SortTiming/GUI"]
 	path = Lecture 12/SortTiming/GUI
 	url = https://github.com/cs106bx/MiniGUI
+[submodule "Lecture 22/Binary Search Trees/TreeDrawing"]
+	path = Lecture 22/Binary Search Trees/TreeDrawing
+	url = https://github.com/htiek/TreeDrawing
+[submodule "Lecture 23/Binary Search Trees II/TreeDrawing"]
+	path = Lecture 23/Binary Search Trees II/TreeDrawing
+	url = https://github.com/htiek/TreeDrawing
+[submodule "Lecture 23/Random BSTs/TreeDrawing"]
+	path = Lecture 23/Random BSTs/TreeDrawing
+	url = https://github.com/htiek/TreeDrawing
+[submodule "Lecture 23/Range Searches/TreeDrawing"]
+	path = Lecture 23/Range Searches/TreeDrawing
+	url = https://github.com/htiek/TreeDrawing
