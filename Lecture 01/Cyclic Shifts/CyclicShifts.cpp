@@ -9,12 +9,15 @@
 #include "console.h"
 using namespace std;
 
+/* Given two strings, is one a rotation of the other? */
 bool areCyclicallyEqual(string one, string two);
 
 int main() {
+    /* Get two strings from the user. */
     string one = getLine("First string:  ");
     string two = getLine("Second string: ");
 
+    /* See if one rotates into the other. */
     if (areCyclicallyEqual(one, two)) {
         cout << "Yep!" << endl;
     } else {
@@ -22,26 +25,6 @@ int main() {
     }
 
     return 0;
-}
-
-/* Given two strings, are they cyclic shifts of one another? */
-bool areCyclicallyEqual(string one, string two) {
-    /* Fencepost issue: Cycle one fewer time than there are
-     * characters in the string, but check a number of times
-     * equal to the number of characters of the string.
-     */
-    for (int i = 1; i < one.length(); i++) {
-        /* They match! */
-        if (one == two) {
-            return true;
-        }
-
-        /* Cycle the second string. */
-        two = two.substr(1) + two[0];
-    }
-
-    /* One last comparison to see if the final shift did it. */
-    return one == two;
 }
 
 
