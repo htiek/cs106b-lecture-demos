@@ -16,23 +16,6 @@ int main() {
     return 0;
 }
 
-int factorial(int n) {
-    /* Base Case: 0! = 1. */
-    if (n == 0) {
-        return 1;
-    }
-    /* Recursive Case: n! = n * (n - 1)!. */
-    else {
-        return n * factorial(n - 1);
-    }
-}
-
-
-
-
-
-
-
 
 
 

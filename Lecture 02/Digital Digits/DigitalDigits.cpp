@@ -18,23 +18,4 @@ int main() {
 }
 
 
-int sumOfDigitsOf(int n) {
-    /* Base Case: Any one-digit number sums to itself. */
-    if (n < 10) {
-        return n;
-    }
-    /* Recursive Case: To add up the digits of a multi-
-     * digit number, add up all but the last digit, then
-     * add in the last digit.
-     */
-    else {
-        return sumOfDigitsOf(n / 10) + (n % 10);
-    }
-}
-
-
-
-
-
-
 
