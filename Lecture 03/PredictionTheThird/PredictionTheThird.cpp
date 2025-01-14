@@ -3,12 +3,11 @@
  * What will this program print?
  */
 #include <iostream>
-#include <string>
 #include "vector.h"
 #include "console.h"
 using namespace std;
 
-void dream(Vector<int>& numbers) {
+void dream(Vector<int> numbers) {
     numbers[1] = 1963;
 }
 

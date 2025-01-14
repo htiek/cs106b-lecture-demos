@@ -3,11 +3,10 @@
  * What will this program print?
  */
 #include <iostream>
-#include <string>
 #include "console.h"
 using namespace std;
 
-void becomeWealthy(int& netWorth) {
+void becomeWealthy(int netWorth) {
     netWorth = 1000000000;
 }
 

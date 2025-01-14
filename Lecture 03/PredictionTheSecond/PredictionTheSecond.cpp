@@ -7,8 +7,8 @@
 #include "console.h"
 using namespace std;
 
-void gollyGee(const string& text) {
-    cout << text.length() << endl;
+void gollyGee(string text) {
+    text[0] = 'g';
 }
 
 int main() {
