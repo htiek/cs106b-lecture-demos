@@ -10,16 +10,6 @@
 #include "lexicon.h"
 using namespace std;
 
-
-/* Given a string, returns whether it's a tautonym. */
-bool isTautonym(const string& word) {
-    /* This is a different but equivalent implementation to the one we saw
-     * in lecture.
-     */
-    return word.length() % 2 == 0 &&
-           word.substr(0, word.length() / 2) == word.substr(word.length() / 2);
-}
-
 int main() {
     Lexicon english("EnglishWords.txt");
 
