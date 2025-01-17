@@ -18,33 +18,10 @@ bool isCloseParenthesis(char ch);
 bool parensMatch(char open, char close);
 
 /* Given a string, are the parentheses balanced in
- * that string? The parameter is accepted by const
- * reference because (1) we don't want to copy the
- * text (that's wasteful), and (2) we don't want
- * this function to make changes to it.
+ * that string?
  */
 bool parensAreBalancedIn(const string& text) {
-    Stack<char> unmatchedOpens;
 
-    for (char ch: text) {
-        if (isOpenParenthesis(ch)) {
-            unmatchedOpens.push(ch);
-        } else if (isCloseParenthesis(ch)) {
-            /* If the stack is empty, then we
-             * have an imbalance.
-             */
-            if (unmatchedOpens.isEmpty()) {
-                return false;
-            }
-
-            char open = unmatchedOpens.pop();
-            if (!parensMatch(open, ch)) {
-                return false;
-            }
-        }
-    }
-
-    return unmatchedOpens.isEmpty();
 }
 
 int main() {
@@ -58,12 +35,19 @@ int main() {
     }
 }
 
+/* Is a character some sort of open parenthesis? */
 bool isOpenParenthesis(char ch) {
     return ch == '(' || ch == '[' || ch == '{';
 }
+
+/* Is a character some sort of close parenthesis? */
 bool isCloseParenthesis(char ch) {
     return ch == ')' || ch == ']' || ch == '}';
 }
+
+/* Do the given pair of an open parenthesis and a close
+ * parenthesis match one another?
+ */
 bool parensMatch(char open, char close) {
     return (open == '(' && close == ')') ||
            (open == '[' && close == ']') ||
