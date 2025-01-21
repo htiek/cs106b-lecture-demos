@@ -3,7 +3,6 @@
  * ---------------
  * A program that generates trees using recursion!
  */
-#define COUNT_LINES
 #include <iostream>
 #include <string>
 #include "random.h"
@@ -29,32 +28,10 @@ GPoint drawPolarLine(double x, double y,
  *  4. The order of the tree is given by the order
  *     parameter.
  */
-int drawTree(double x, double y,
-             double length,
-             double angle,
-             int order) {
-    if (order == 0) {
-        return 0;
-    }
-
-    /* Happiness and daises and roses and mirth. */
-    int numLines = 0;
-    GPoint endpoint = drawPolarLine(x, y,
-                                    length / 4,
-                                    angle);
-    numLines++;
-
-    numLines += drawTree(endpoint.x, endpoint.y,
-                         3 * length / 4,
-                         angle + 30,
-                         order - 1);
-
-    numLines += drawTree(endpoint.x, endpoint.y,
-                         3 * length / 4,
-                         angle - 30,
-                         order - 1);
-
-    return numLines;
+void drawTree(double x, double y,
+              double length,
+              double angle,
+              int order) {
 }
 
 
@@ -93,6 +70,18 @@ GWindow* theWindow;
 void clear();
 void repaintWindow();
 
+/* Level of indirection to call drawTree appropriately. */
+void callDrawTree(double x, double y, double height, double angle, int order,
+                  void drawTree(double, double, double, double, int)) {
+    drawTree(x, y, height, angle, order);                 
+}
+
+void callDrawTree(double x, double y, double height, double angle, int order,
+                  int drawTree(double, double, double, double, int)) {
+    int numLinesDrawn = drawTree(x, y, height, angle, order);
+    cout << "   Lines in that tree: " << numLinesDrawn << endl;                
+}
+
 /* Main program */
 int main() {
     GWindow window(kWindowWidth, kWindowHeight);
@@ -111,60 +100,10 @@ int main() {
         double treeHeight = window.getCanvasHeight();
 
 
-
-#ifdef COUNT_LINES
-{
-
-
-
-
-
-    /* The code above this does some graphics-y things
-     * to get everything set up.
-     */
-
-    int numLinesDrawn = drawTree(treeRootX, treeRootY,
-                                 treeHeight,
-                                 90.0, 8);
-    cout << "   Lines in that tree: " << numLinesDrawn << endl;
-
-
-
-
-
-
-
-
-
-}
-#else
-{
-
-
-
-
-
-    /* The code above this does some graphics-y
-     * things to get everything set up.
-     */
-
-    drawTree(treeRootX, treeRootY,
-             treeHeight,
-             90.0, 8);
-
-
-
-
-
-
-
-
-
-
-
-
-}
-#endif
+        /* Magic level of indirection so that we either call the void function
+         * or call the int function and print the number of lines.
+         */
+        callDrawTree(treeRootX, treeRootY, treeHeight, 90.0, 8, drawTree);
         pause(2000);
     }
 }
