@@ -3,7 +3,6 @@
  * ---------------
  * A program that draws the Sierpinski Carpet fractal.
  */
-#define COUNT_SQUARES
 #include <iostream>
 #include <string>
 #include "gwindow.h"
@@ -17,47 +16,11 @@ using namespace std;
 void drawSquare(double x, double y,
                 double sideLength);
 
-/* Draws a Sierpinski carpet of the given order.
- * Returns how many total squares were drawn.
- */
+/* Draws a Sierpinski carpet of the given order. */
+void drawCarpet(double x, double y,
+                double sideLength,
+                int order) {
 
-// Draw an order-2 Sierpinski carpet (squares = 24)
-
-
-
-
-int drawCarpet(double x, double y,
-               double sideLength,
-               int order) {
-    /* Base Case: An order-0 carpet is just a filled
-     * square.
-     */
-    if (order == 0) {
-        drawSquare(x, y, sideLength);
-        return 1;
-    }
-    /* Recursive Case: Draw eight smaller Sierpinski
-     * carpets, arranged in a square, with the center
-     * square left off.
-     */
-    else {
-        int squares = 0;
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                /* Skip the center square. */
-                if (!(row == 1 && col == 1)) {
-                    double newSide = sideLength / 3;
-                    double newX = x + col * newSide;
-                    double newY = y + row * newSide;
-
-                    squares += drawCarpet(newX, newY,
-                                          newSide,
-                                          order - 1);
-                }
-            }
-        }
-        return squares;
-    }
 }
 
 
@@ -93,6 +56,25 @@ const double kMaxOrder = 5;
 void clear();
 void repaintWindow();
 
+/* Level of indirection to make the lecture demo either call the
+ * void version of drawCarpet or the int version. If it's the
+ * latter, print how many squares were drawn.
+ *
+ * You aren't expected to understand how this works; this uses
+ * a bit of C++ chicanery that's more of a CS106L topic than a
+ * CS106B topic.
+ */
+void draw(double x, double y, double size, int order,
+          void drawCarpet(double, double, double, int)) {
+    drawCarpet(x, y, size, order);         
+}
+
+void draw(double x, double y, double size, int order,
+          int drawCarpet(double, double, double, int)) {
+    int numSquares = drawCarpet(x, y, size, order);
+    cout << "Squares in that carpet: " << numSquares << endl;
+}
+
 /* Yikes, global variables! This is normally a big
  * no-no, but we've chosen to do it here because we
  * want the lecture to focus on the recursion
@@ -121,14 +103,7 @@ int main() {
             double x = (window.getCanvasWidth()  - size) / 2.0;
             double y = (window.getCanvasHeight() - size) / 2.0;
 
-#ifdef COUNT_SQUARES
-            int numSquares =
-#endif
-            drawCarpet(x, y, size, order);
-#ifdef COUNT_SQUARES
-            cout << "           An order-" << order << " Sierpinski carpet is made "
-                 << "of " << numSquares << " square(s)." << endl;
-#endif
+            draw(x, y, size, order, drawCarpet);
             pause(2000);
         }
     }
