@@ -73,6 +73,8 @@ const std::vector<Timing::Option> _kTimingOptions = {
     TIME_TEST("beni",            makeBeniTest),
     TIME_TEST("printNumbers",    makePrintNumbersTest),
     TIME_TEST("printNumbers 2",  makePrintNumbers2Test),
+    TIME_TEST("printTrigrams_v1",  makePrintTrigramsV1Test),
+    TIME_TEST("printTrigrams_v2",  makePrintTrigramsV2Test),
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <random>
 using namespace std;
 
 double averageOf(const vector<int>& vec) {
@@ -82,6 +83,21 @@ void printNumbers2(int n) {
     }
 }
 
+void printTrigrams_v1(const string& str) {
+    for (int i = 0; i + 3 <= str.length(); i++) {
+        string trigram = str.substr(i, 3);
+        cout << trigram << endl;
+    }
+}
+
+void printTrigrams_v2(const string& str) {
+    string s = str;
+    while (s.length() >= 3) {
+        cout << s[0] << s[1] << s[2] << endl;
+        s = s.substr(1);
+    }
+}
+
 
 
 /* Stuff to make the GUI work well with us. */
@@ -148,7 +164,7 @@ Timing::TimeTest makeBeniTest() {
 
             cout.rdbuf(oldBuf);
         },
-        Timing::linRange(500, 2500, 250),
+        Timing::linRange(250, 1250, 125),
         { 1 },
         "beni"
     };
@@ -169,6 +185,50 @@ Timing::TimeTest makePrintNumbersTest() {
         Timing::linRange(1000, 10000, 500),
         { 1 },
         "printNumbers"
+    };
+}
+
+Timing::TimeTest makePrintTrigramsV1Test() {
+    return {
+        [] (size_t n, size_t, Timing::Timer& timer) {
+            ostringstream buffer;
+            auto oldBuf = cout.rdbuf(buffer.rdbuf());
+
+            string s(n, 0);
+            mt19937 generator(137);
+            generate_n(s.begin(), n, generator);
+
+            timer.start();
+            printTrigrams_v1(s);
+            timer.stop();
+
+            cout.rdbuf(oldBuf);
+        },
+        Timing::linRange(20000, 200000, 10000),
+        { 1 },
+        "printTrigrams_v1"
+    };
+}
+
+Timing::TimeTest makePrintTrigramsV2Test() {
+    return {
+        [] (size_t n, size_t, Timing::Timer& timer) {
+            ostringstream buffer;
+            auto oldBuf = cout.rdbuf(buffer.rdbuf());
+
+            string s(n, 0);
+            mt19937 generator(137);
+            generate_n(s.begin(), n, generator);
+
+            timer.start();
+            printTrigrams_v2(s);
+            timer.stop();
+
+            cout.rdbuf(oldBuf);
+        },
+        Timing::linRange(20000, 200000, 10000),
+        { 1 },
+        "printTrigrams_v2"
     };
 }
 
