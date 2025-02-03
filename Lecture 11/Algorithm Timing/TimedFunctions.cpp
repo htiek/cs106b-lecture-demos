@@ -164,7 +164,7 @@ Timing::TimeTest makeBeniTest() {
 
             cout.rdbuf(oldBuf);
         },
-        Timing::linRange(250, 1250, 125),
+        Timing::linRange(250, 1500, 125),
         { 1 },
         "beni"
     };
