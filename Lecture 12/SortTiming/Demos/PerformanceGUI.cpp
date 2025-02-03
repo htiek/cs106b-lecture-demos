@@ -33,11 +33,11 @@ namespace Timing {
 namespace {
     /* Graphics constants. */
     const double kEventTimerSpeed = 1; // Fast enough for things to run smoothly, not enough to drown us
-    const string kBackgroundColor = "White";
+    const auto kBackgroundColor = Color::WHITE();
     const double kPadding = 20;
 
     /* Axis constants. */
-    const char kAxisColor[] = "#555555"; // Davy's gray
+    const auto kAxisColor = Color::fromHex(0x555555); // Davy's gray
     const MiniGUI::Font kAxisFont(FontFamily::SERIF, FontStyle::NORMAL, 8, kAxisColor);
 
     const size_t kMaxAxisLabels = 10;    // Max number of major tick marks on the X axis
@@ -55,14 +55,14 @@ namespace {
     const MiniGUI::Font kLegendFont(FontFamily::SANS_SERIF, FontStyle::NORMAL, 12, kAxisColor);
 
     /* Colors to use for various values of k. */
-    const vector<string> kLineColors = {
-        "#CC0000", // Rosso Corsa
-        "#EE7F2D", // Princeton Orange
-        "#FFC40C", // Mikado Yellow
-        "#008000", // Office Green
-        "#007BA7", // Cerulean
-        "#B53389", // Fandango
-        "#343434", // Jet
+    const vector<Color> kLineColors = {
+        Color::fromHex(0xCC0000), // Rosso Corsa
+        Color::fromHex(0xEE7F2D), // Princeton Orange
+        Color::fromHex(0xFFC40C), // Mikado Yellow
+        Color::fromHex(0x008000), // Office Green
+        Color::fromHex(0x007BA7), // Cerulean
+        Color::fromHex(0xB53389), // Fandango
+        Color::fromHex(0x343434), // Jet
     };
 
     /* Problem handler that reports timing information for the different types. */
@@ -111,7 +111,7 @@ namespace {
         mConsole->setWidth(window.getCanvasWidth() / 2);
         mConsole->setHeight(window.getCanvasHeight());
 
-        mConsole->setStyle("black", GColorConsole::NORMAL, FontSize(24));
+        mConsole->setStyle(Color::BLACK(), GColorConsole::NORMAL, FontSize(24));
     }
 
     void PerformanceGUI::stepTests() {
@@ -332,7 +332,7 @@ namespace {
 
         /* Set up the legend. Don't draw it yet; we need to clear the area behind it. */
         auto legend = LegendRender::construct(labels, kLineColors, bounds, { kLegendFont.color() }, kLegendFont, kLegendFont.color());
-        window.setColor(kBackgroundColor);
+        window.setColor(kBackgroundColor.toRGB());
         window.fillRect(legend->bounds());
 
         /* Now draw it. */
