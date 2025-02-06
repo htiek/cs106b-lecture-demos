@@ -70,8 +70,8 @@ void splitSort(Container& v) {
     Container lhs(v.begin(), v.begin() + half);
     Container rhs(v.begin() + half, v.end());
 
-    insertionSort(lhs);
-    insertionSort(rhs);
+    selectionSort(lhs);
+    selectionSort(rhs);
     merge(v, lhs, rhs);
 }
 
@@ -82,10 +82,10 @@ void doubleSplitSort(Container& v) {
     Container b(v.begin() + quarter, v.begin() + 2 * quarter);
     Container c(v.begin() + 2 * quarter, v.begin() + 3 * quarter);
     Container d(v.begin() + 3 * quarter, v.end());
-    insertionSort(a);
-    insertionSort(b);
-    insertionSort(c);
-    insertionSort(d);
+    selectionSort(a);
+    selectionSort(b);
+    selectionSort(c);
+    selectionSort(d);
 
     Container lhs, rhs;
     merge(lhs, a, b);
@@ -107,7 +107,7 @@ void mergesort(Container& v) {
 
 void hybridMergesort(Container& v) {
     if (v.size() <= 16) {
-        insertionSort(v);
+        selectionSort(v);
         return;
     }
 
