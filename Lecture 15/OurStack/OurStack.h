@@ -1,4 +1,4 @@
-/*********************************************************
+/******************************************************************************
  * File: OurStack.h
  *
  * A class representing a stack that holds integers.
@@ -19,4 +19,13 @@ private:
     int  allocatedSize; // How much space has been allocated
     int  logicalSize;   // How much space has been used
 };
+
+
+
+
+
+
+
+
+
 
