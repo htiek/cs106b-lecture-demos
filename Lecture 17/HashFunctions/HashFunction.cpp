@@ -10,14 +10,8 @@
 #include <array>
 #include <cstdint>
 
-namespace hashfunction_detail {
+namespace {
     using TabulationTable = std::array<std::array<std::uint32_t, 256>, 4>;
-
-    std::uint32_t random32Bits() {
-        static std::mt19937 engine(randomInteger(0, INT_MAX));
-        std::uniform_int_distribution<std::uint32_t> dist;
-        return dist(engine);
-    }
 
     TabulationTable tabulationTable(std::uint32_t seed) {
         std::mt19937 engine(seed);
@@ -42,4 +36,15 @@ namespace hashfunction_detail {
             return result;
         };
     }
+}
+
+HashProvider forSize(int numSlots) {
+    if (numSlots <= 0) {
+        error("forSize: numSlots must be positive.");
+    }
+
+    HashProvider result;
+    result.coreHash = tabulationHashFunction(137);
+    result.numSlots = numSlots;
+    return result;
 }

@@ -26,43 +26,11 @@ int main() {
     while (true) {
         string name = getLine("What are you musing about? ");
         if (set.contains(name)) {
-            cout << "Muse-ic to my ears!" << endl;
+            cout << "Yes, it's in the set! Muse-ic to my ears!" << endl;
         } else {
-            cout << "We are not a-mused." << endl;
+            cout << "No, it doesn't exist! We are not a-mused." << endl;
         }
     }
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

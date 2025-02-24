@@ -1,3 +1,8 @@
+/******************************************************************************
+ * File: OurSet.h
+ *
+ * Header file defining a type that acts like Set<string>.
+ */
 #pragma once
 
 #include <string>
@@ -17,6 +22,10 @@ public:
 private:
     /* List of buckets. Each bucket is a list of the strings in
      * that bucket.
+     *
+     * string = one item
+     * Vector<string> = list of items (bucket)
+     * Vector<Vector<string>> = list of buckets
      */
     Vector<Vector<std::string>> buckets;
 

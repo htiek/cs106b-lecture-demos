@@ -6,20 +6,20 @@
 #include "error.h"
 #include "collections.h"
 
+class HashProvider;
+
 template <typename T> class HashFunction {
 public:
     /**
-     * Constructs a new HashFunction for the given number of slots. Each hash
-     * function constructed this way will be initialized randomly.
+     * Constructs a new hash function for the specified number of slots.
+     * For example:
      *
-     * The second argument is a random seed. That value will be used as a random
-     * seed. Setting this value is useful if you'd like to have your hash function
-     * behave consistently across runs of the program.
+     *    HashFunction<string> hashFn = forSize(137); // 137 slots
      */
-    explicit HashFunction(int numSlots, int randomSeed = 0);
+    HashFunction(const HashProvider& provider);
 
     /**
-     * Constructs a new HashFunction. This HashFunction cannot be used bceause
+     * Constructs a new HashFunction. This HashFunction cannot be used because
      * it won't have been initialized with a number of buckets, and trying to
      * use it will cause a runtime error.
      *
@@ -114,21 +114,29 @@ private:
      */
 };
 
-namespace hashfunction_detail {
-    std::function<int(int)> tabulationHashFunction(int seed);
-}
+class HashProvider {
+private:
+    int numSlots;
+    std::function<int(int)> coreHash;
+
+    friend HashProvider forSize(int numSlots);
+    template <typename T> friend class HashFunction;
+};
+
+HashProvider forSize(int numSlots);
 
 /* * * * * Implementation Below This Point * * * * */
 template <typename T>
-HashFunction<T>::HashFunction(int numSlots, int seed) {
-    if (numSlots <= 0) {
-        error("HashFunction<T>::wrap(): numSlots must be positive.");
-    }
+HashFunction<T>::HashFunction(const HashProvider& provider) {
+    /* Copy these to locals so we don't have dangling references
+     * if we copy the HashFunction object.
+     */
+    auto scrambler = provider.coreHash;
+    int numSlots = provider.numSlots;
 
-    auto scrambler = hashfunction_detail::tabulationHashFunction(seed);
-    mNumSlots = numSlots;
-    callback = [scrambler, numSlots](const T& key) {
-        return (scrambler(hashCode(key)) & 0x7FFFFFF) % numSlots;
+    mNumSlots = provider.numSlots;
+    callback = [=](const T& key) {
+        return (scrambler(hashCode(key)) & 0x7FFFFFFF) % numSlots;
     };
 }
 
