@@ -14,14 +14,12 @@
 #include "console.h"
 using namespace std;
 
-const int kNumElems = 7;
-
-void runSimpleTests() {
+void runSimpleTests(int numElems) {
     OurStack stack;
 
     /* Load the stack with random values. */
     cout << "Pushing elements onto the stack:" << endl;
-    for (int i = 0; i < kNumElems; i++) {
+    for (int i = 0; i < numElems; i++) {
         int value = randomInteger(0, 1000);
         cout << setw(6) << value;
         stack.push(value);
@@ -56,19 +54,21 @@ void runTimeTests(int minSize, int maxSize, int stepSize) {
 int main() {
     cout << "Welcome to the Stack Test Driver!" << endl;
     cout << "Please choose an option: " << endl;
-    cout << "  1: Simple tests" << endl;
-    cout << "  2: Easy time tests" << endl;
-    cout << "  3: Hard time tests" << endl;
-    cout << "  4: Very hard time tests" << endl;
-    cout << "  5: Call it a day" << endl;
+    cout << "  1: Push and pop 4 elements" << endl;
+    cout << "  2: Push and pop 7 elements" << endl;
+    cout << "  3: Easy time tests" << endl;
+    cout << "  4: Hard time tests" << endl;
+    cout << "  5: Very hard time tests" << endl;
+    cout << "  6: Call it a day" << endl;
 
     while (true) {
         int option = getInteger("Your choice: ");
-        if (option == 1) runSimpleTests();
-        else if (option == 2) runTimeTests(5000, 50000, 5000);
-        else if (option == 3) runTimeTests(1000000, 10000000, 1000000);
-        else if (option == 4) runTimeTests(10000000, 100000000, 10000000);
-        else if (option == 5) break;
+        if (option == 1) runSimpleTests(4);
+        else if (option == 2) runSimpleTests(7);
+        else if (option == 3) runTimeTests(5000, 50000, 5000);
+        else if (option == 4) runTimeTests(1000000, 10000000, 1000000);
+        else if (option == 5) runTimeTests(10000000, 100000000, 10000000);
+        else if (option == 6) break;
         else cerr << "Sorry, I don't understand." << endl;
     }
 
