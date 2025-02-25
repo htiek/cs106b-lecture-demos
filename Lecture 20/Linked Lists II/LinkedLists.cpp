@@ -33,7 +33,7 @@ int lengthOf(Cell* list) {
 /* From last time! */
 void printList(Cell* list) {
     while (list != nullptr) {
-        cout << list->value << endl;
+        cout << "  " << list->value << endl;
         list = list->next;
     }
 }
@@ -47,20 +47,27 @@ void deleteList(Cell* list) {
     }
 }
 
+/* Puts a new item at the front of the list. */
 void prependTo(Cell*& list, const string& value) {
-    /* Improve upon the emptiness. */
+    /* Create a new cell. */
+    Cell* cell  = new Cell;
+    cell->value = value;
+
+    /* This cell needs point to the start of the old list. */
+    cell->next = list;
+
+    /* Update the head of the list. */
+    list = cell;
 }
 
 int main() {
-    Cell* list = nullptr;
+    Cell* list = readList();
 
-    prependTo(list, "Elephant");
-    prependTo(list, "Sunfish");
-    prependTo(list, "Whale");
-    prependTo(list, "Piraracu");
-
+    cout << "The list has " << lengthOf(list) << " items. They are: " << endl;
     printList(list);
-    deleteList(list);
+    cout << "That's all!" << endl;
+
+    deleteList(head);
     return 0;
 }
 
