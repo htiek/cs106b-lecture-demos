@@ -5,7 +5,7 @@
 	path = Lecture 12/SortTiming/GUI
 	url = https://github.com/cs106bx/MiniGUI
 [submodule "Lecture 22/Binary Search Trees/TreeDrawing"]
-	path = Lecture 22/Binary Search Trees/TreeDrawing
+	path = Lecture 21/Binary Search Trees/TreeDrawing
 	url = https://github.com/htiek/TreeDrawing
 [submodule "Lecture 23/Binary Search Trees II/TreeDrawing"]
 	path = Lecture 23/Binary Search Trees II/TreeDrawing
