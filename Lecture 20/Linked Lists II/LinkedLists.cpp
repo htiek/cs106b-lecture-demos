@@ -39,7 +39,7 @@ void printList(Cell* list) {
 }
 
 /* From last time! */
-void deleteList(Cell* list) {
+void freeList(Cell* list) {
     while (list != nullptr) {
         Cell* next = list->next;
         delete list;
@@ -47,14 +47,20 @@ void deleteList(Cell* list) {
     }
 }
 
+void prependTo(Cell* list, const string& value) {
+
+}
+
 int main() {
-    Cell* list = readList();
+    Cell* list = nullptr;
+    prependTo(list, "Elephant");
+    prependTo(list, "Sunfish");
+    prependTo(list, "Whale");
+    prependTo(list, "Piraracu");
 
-    cout << "The list has " << lengthOf(list) << " items. They are: " << endl;
+    cout << "This list has length " << lengthOf(list) << "." << endl;
     printList(list);
-    cout << "That's all!" << endl;
-
-    deleteList(head);
+    freeList(list);
     return 0;
 }
 
