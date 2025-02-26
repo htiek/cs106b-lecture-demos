@@ -5,128 +5,182 @@
  */
 #include <iostream>
 #include <string>
-#include <fstream>
-#include "simpio.h"
 #include "console.h"
+#include "simpio.h"
+#include "TreeGraphics.h"
 using namespace std;
 
 /* Type: Node
  * A node in a binary search tree.
  */
 struct Node {
-    string value;
+    int value;
     Node* left;
     Node* right;
 };
 
-bool contains(Node* root, const string& key) {
-    /* Base case: If the tree is empty, your key isn't here. */
-    if (root == nullptr) return false;
-
-    /* Recursive case: See how we compare to the root. */
-    if (key == root->value) return true;
-    else if (key < root->value) return contains(root->left, key);
-    else /*  key > root->value */ return contains(root->right, key);
-}
-
-void printBetween(Node* root, const string& low, const string& high) {
-    if (root == nullptr) return;
-
-    if (high < root->value) {
-        printBetween(root->left, low, high);
-    } else if (low > root->value) {
-        printBetween(root->right, low, high);
-    } else {
-        printBetween(root->left, low, high);
-        cout << root->value << endl;
-        printBetween(root->right, low, high);
-    }
-}
-
-/* Prints out the full contents of a BST in sorted order. */
-void printContentsOf(Node* root) {
-    /* Base case: Empty tree has nothing to print. */
-    if (root == nullptr) return;
-
-    /* Otherwise, print things in sorted order! To do that, we need to
-     *
-     *   1. print the smaller elements in sorted order,
-     *   2. then print our value,
-     *   3. then print the larger values in sorted order.
-     */
-    printContentsOf(root->left);
-    cout << root->value << endl;
-    printContentsOf(root->right);
-}
-
-/* Frees all memory used by the given BST. */
-void deleteTree(Node* root) {
-    if (root == nullptr) return;
-
-    deleteTree(root->right);
-    deleteTree(root->left);
-    delete root;
-}
-
-void insertInto(Node*& root, const string& key) {
-    /* Base case: If we insert into an empty tree, just make a new node for the key. */
-    if (root == nullptr) {
-        root = new Node { key, nullptr, nullptr };
-    }
-    /* Otherwise, see where we go. */
-    else if (key < root->value) {
-        insertInto(root->left, key);
-    } else if (key > root->value) {
-        insertInto(root->right, key);
-    } /* else if (key == root->value) // do nothing */
-}
-
-/* Returns a BST containing a bunch of California trees. Normally, you wouldn't construct
- * a BST this way; this is just here for the lecture demo.
+/* Constructs this specific BST:
+ *
+ *                    49
+ *                  /    \
+ *                 25    77
+ *                /  \     \
+ *               12  37    96
+ *
+ * This is NOT how you typically make a BST. Think of this like the original
+ * code we saw that manually constructed a linked list - it's something to
+ * get us started, but in practice you'd build the tree using other methods.
  */
-Node* makeTreeTree() {
+Node* makeInitialTree() {
     return new Node {
-        "Douglas Fir",
+        49,
         new Node {
-            "Bristlecone Pine",
+            25,
             new Node {
-                "Bay Laurel",
-                nullptr,
-                nullptr
+                12, nullptr, nullptr
             },
             new Node {
-                "Coast Redwood",
-                nullptr,
-                nullptr
+                37, nullptr, nullptr
             }
         },
         new Node {
-            "Jeffrey Pine",
+            77,
+            nullptr,
             new Node {
-                "Giant Sequoia",
-                nullptr,
-                nullptr
-            },
-            new Node {
-                "Manzanita",
-                nullptr,
-                nullptr
+                96, nullptr, nullptr
             }
         }
     };
 }
 
+/* Returns whether the given element is in the BST pointed at by
+ * root.
+ */
+bool contains(Node* root, int key) {
+    /* Base Case: The empty tree has nothing in it. */
+    if (root == nullptr) {
+        return false;
+    }
+    /* Base Case: If the item you want is at the root, great! It was very
+     * easy to find.
+     */
+    else if (key == root->value) {
+        return true; // You just saw it!
+    }
+    /* Recursive Cases: Otherwise, if the key is anywhere, it will be either
+     * to the left or the right, based on how it compares against the
+     * root.
+     */
+    else if (key < root->value) {
+        return contains(root->left, key);
+    } else /*  key > root->value */ {
+        return contains(root->right, key);
+    }
+}
 
+/* Prints all nodes in the BST in sorted order. */
+void printTree(Node* root) {
+    /* Base Case: An empty tree has nothing in it. */
+    if (root == nullptr) {
+        return; // Nothing to see here folks, move along
+    }
+    /* Recursive Case: List everything smaller than the root
+     * in sorted order, then the root, then everything bigger
+     * than the root in sorted order.
+     */
+    else {
+        printTree(root->left);
+        cout << root->value << endl;
+        printTree(root->right);
+    }
+}
+
+/* Adds the value to the given tree. */
+void add(Node*& root, int key) {
+    /* Base Case: If the tree is empty, it now has just one
+     * element.
+     */
+    if (root == nullptr) {
+        root = new Node;
+        root->value = key;
+        root->left = root->right = nullptr;
+    }
+    /* Base Case: If the key is already in the tree, great! There's
+     * nothing to do.
+     */
+    else if (key == root->value) {
+        // Do nothing
+    }
+    /* Recursive Case: Add the key to the proper subtree. */
+    else if (key < root->value) {
+        add(root->left, key);
+    } else /*  key > root->value */ {
+        add(root->right, key);
+    }
+}
+
+/* Cleans up all memory used by the BST. */
+void deleteTree(Node* root) {
+    if (root == nullptr) {
+        return; // Nothing to clean up.
+    } else {
+        /* Clean up the children, then the root, to avoid accessing memory
+         * after freeing it.
+         */
+        deleteTree(root->left);
+        deleteTree(root->right);
+        delete root;
+    }
+}
+
+/* Prints all values in the BST that are between the specified values,
+ * inclusive.
+ */
+void printInRange(Node* root, int low, int high) {
+    if (root == nullptr) {
+        // Nothing to see.
+    }
+    /* Range is purely to the left of the root. */
+    else if (high < root->value) {
+        printInRange(root->left, low, high);
+    }
+    /* Range is purely to the right of the root. */
+    else if (low > root->value) {
+        printInRange(root->right, low, high);
+    }
+    /* Range includes the root, so there may be values on both
+     * the left and right side that we need to consider.
+     */
+    else {
+        printInRange(root->left, low, high);
+        cout << root->value << endl;
+        printInRange(root->right, low, high);
+    }
+}
 
 int main() {
-    Node* root = makeTreeTree();
+    /* Constructs this specific BST:
+     *
+     *                    49
+     *                  /    \
+     *                 25    77
+     *                /  \     \
+     *               12  37    96
+     */
+    Node* root = makeInitialTree();
+    drawTree(root);
 
-    insertInto(root, "Joshua Tree");
-    insertInto(root, "Ponderosa Pine");
+    printTree(root);
 
-    printBetween(root, "D", "K");
+    while (true) {
+        int value = getInteger("Enter value: ");
+        if (contains(root, value)) {
+            cout << "Yep! It's there." << endl;
+        } else {
+            cout << "Nope! Not there. Except now it is. :-)" << endl;
+            add(root, value);
+        }
 
-    deleteTree(root);
-
-    return 0;
+        drawTree(root);
+    }
 }
