@@ -8,11 +8,11 @@
 	path = Lecture 21/Binary Search Trees/TreeDrawing
 	url = https://github.com/htiek/TreeDrawing
 [submodule "Lecture 23/Binary Search Trees II/TreeDrawing"]
-	path = Lecture 23/Binary Search Trees II/TreeDrawing
+	path = Lecture 22/Binary Search Trees II/TreeDrawing
 	url = https://github.com/htiek/TreeDrawing
 [submodule "Lecture 23/Random BSTs/TreeDrawing"]
-	path = Lecture 23/Random BSTs/TreeDrawing
+	path = Lecture 22/Random BSTs/TreeDrawing
 	url = https://github.com/htiek/TreeDrawing
 [submodule "Lecture 23/Range Searches/TreeDrawing"]
-	path = Lecture 23/Range Searches/TreeDrawing
+	path = Lecture 22/Range Searches/TreeDrawing
 	url = https://github.com/htiek/TreeDrawing
