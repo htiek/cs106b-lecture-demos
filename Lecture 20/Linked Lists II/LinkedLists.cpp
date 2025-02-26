@@ -47,19 +47,6 @@ void deleteList(Cell* list) {
     }
 }
 
-/* Puts a new item at the front of the list. */
-void prependTo(Cell*& list, const string& value) {
-    /* Create a new cell. */
-    Cell* cell  = new Cell;
-    cell->value = value;
-
-    /* This cell needs point to the start of the old list. */
-    cell->next = list;
-
-    /* Update the head of the list. */
-    list = cell;
-}
-
 int main() {
     Cell* list = readList();
 
