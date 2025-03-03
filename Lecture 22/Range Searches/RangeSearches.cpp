@@ -59,17 +59,7 @@ Node* americanTree() {
 }
 
 void printInRange(Node* root, const string& low, const string& high) {
-    if (root == nullptr) {
-        // Nothing to see.
-    } else if (high < root->value) {
-        printInRange(root->left, low, high);
-    } else if (low > root->value) {
-        printInRange(root->right, low, high);
-    } else {
-        printInRange(root->left, low, high);
-        cout << root->value << endl;
-        printInRange(root->right, low, high);
-    }
+
 }
 
 int main() {

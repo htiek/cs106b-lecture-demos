@@ -16,3 +16,6 @@
 [submodule "Lecture 23/Range Searches/TreeDrawing"]
 	path = Lecture 22/Range Searches/TreeDrawing
 	url = https://github.com/htiek/TreeDrawing
+[submodule "Lecture 22/Lecture 22/BST Comparisons/TreeDrawing"]
+	path = Lecture 22/Lecture 22/BST Comparisons/TreeDrawing
+	url = https://github.com/htiek/TreeDrawing
