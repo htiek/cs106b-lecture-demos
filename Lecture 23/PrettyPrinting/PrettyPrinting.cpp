@@ -61,23 +61,8 @@ void freeTree(Node* root) {
     }
 }
 
-void prettyPrintRec(Node* tree, const string& prefix) {
-    if (tree == nullptr) return;
-
-    cout << prefix << tree->value;
-    if (!tree->children.isEmpty()) {
-        cout << " {" << endl;
-        for (Node* child: tree->children) {
-            prettyPrintRec(child, prefix + "     ");
-        }
-        cout << prefix << "}" << endl;
-    } else {
-        cout << endl;
-    }
-}
-
 void prettyPrint(Node* tree) {
-    return prettyPrintRec(tree, "");
+
 }
 
 int main() {
